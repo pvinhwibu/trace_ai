@@ -412,6 +412,25 @@ html .mode-tabs .mode-tab.active{background:var(--sk-soft);background-image:none
 #sk-trial{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:58;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:10px;max-width:calc(100% - 24px);padding:10px 14px;border-radius:999px;background:var(--sk-surface);color:var(--sk-text);border:2px solid var(--sk-accent);box-shadow:0 12px 34px rgba(0,0,0,.28);font-size:.85rem}
 #sk-trial[hidden]{display:none}
 @media (max-width:640px){.sk-panel{padding:14px;border-radius:22px}.sk-grid{grid-template-columns:1fr}}
+
+/* Mindmap: sơ đồ cây có khoảng cách rõ ràng, cuộn ngang trên màn hình hẹp */
+.trace-mindmap{display:block;overflow:hidden!important;padding:12px!important;border-radius:16px}
+.trace-map-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.82rem;font-weight:700;color:var(--tc-text);margin-bottom:12px}
+.trace-map-copy{border:1px solid var(--tc-border);border-radius:9px;padding:6px 10px;background:var(--sk-surface,#fff);color:var(--tc-text);font-size:.76rem;white-space:nowrap}
+.trace-map-canvas{max-width:100%;overflow:auto;padding:14px 8px 24px;scrollbar-width:thin}
+.trace-mindmap .trace-tree-root,.trace-mindmap .trace-tree-root ul{list-style:none;margin:0;padding:0;border:0!important}
+.trace-mindmap .trace-tree-root{display:flex;justify-content:center;min-width:max-content}
+.trace-mindmap .trace-tree-item{margin:0;display:flex;flex-direction:column;align-items:center;position:relative;min-width:116px;padding:0 10px}
+.trace-mindmap .trace-tree-item>ul{display:flex;justify-content:center;position:relative;padding-top:24px!important}
+.trace-mindmap .trace-tree-item>ul::before{content:"";position:absolute;top:0;height:24px;border-left:2px solid var(--sk-accent,#2563eb)}
+.trace-mindmap .trace-tree-item>ul>.trace-tree-item::before{content:"";position:absolute;top:0;left:50%;height:24px;border-left:2px solid var(--sk-accent,#2563eb)}
+.trace-mindmap .trace-tree-item>ul>.trace-tree-item:not(:only-child)::after{content:"";position:absolute;top:0;left:0;right:0;border-top:2px solid var(--sk-accent,#2563eb)}
+.trace-mindmap .trace-tree-item>ul>.trace-tree-item:first-child::after{left:50%}
+.trace-mindmap .trace-tree-item>ul>.trace-tree-item:last-child::after{right:50%}
+.trace-mindmap .trace-tree-item>ul>.trace-tree-item:only-child::after{display:none}
+.trace-mindmap .trace-mindmap-node{width:fit-content;max-width:190px;min-width:100px;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.4;padding:10px 13px;border-radius:12px;box-shadow:0 2px 7px rgba(0,0,0,.06);z-index:1;position:relative}
+.trace-mindmap .trace-tree-root>.trace-tree-item>.trace-mindmap-node{background:var(--sk-grad,linear-gradient(135deg,#2563eb,#7c3aed));color:var(--sk-on,#fff);font-weight:800;border-color:transparent}
+@media(max-width:640px){.trace-mindmap .trace-mindmap-node{max-width:150px;font-size:.76rem;padding:8px 10px}.trace-mindmap .trace-tree-item{padding:0 6px;min-width:105px}}
 </style>
 <style id="trace-v2-skins">
 /* Chuyển cảnh nhẹ, không ảnh hưởng các vùng cuộn */
@@ -2398,24 +2417,56 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             if (sender === 'ai') traceRecordAnswer(tracePendingMode, traceLastQuestion, content);
         };
 
-        // Vẽ sơ đồ cây trực quan nếu AI trả về khối ```mindmap ... ```.
-        function traceRenderMindmap(outline) {
-            const lines = String(outline || '').split('\n').map(line => line.replace(/\t/g, '  ')).filter(line => line.trim());
-            if (!lines.length) return '<p class="text-neutral-500">Chưa có dữ liệu sơ đồ.</p>';
-            const clean = value => value.replace(/^\s*(?:[-*•+]\s*|#+\s*)/, '').replace(/\*\*/g, '').trim();
-            const root = { text: clean(lines[0]), children: [], level: -1 };
-            const stack = [root];
-            lines.slice(1).forEach(line => {
-                const spaces = (line.match(/^\s*/) || [''])[0].replace(/\t/g, '  ').length;
-                const level = Math.max(0, Math.floor(spaces / 2));
-                while (stack.length > 1 && stack[stack.length - 1].level >= level) stack.pop();
-                const node = { text: clean(line), children: [], level };
-                stack[stack.length - 1].children.push(node);
-                stack.push(node);
-            });
-            const draw = node => `<li><div class="trace-mindmap-node">${escapeHtml(node.text)}</div>${node.children.length ? `<ul>${node.children.map(draw).join('')}</ul>` : ''}</li>`;
-            return `<div class="trace-mindmap"><ul>${draw(root)}</ul></div>`;
+        // Đọc sơ đồ từ code block, gạch đầu dòng, số thứ tự hoặc ký tự cây.
+        function traceParseMindmap(outline) {
+            const raw = String(outline || '').replace(/\r/g, '').replace(/\t/g, '  ')
+                .replace(/^[ \t]*```(?:mindmap|markdown|text)?[ \t]*\n?/i, '').replace(/\n?```\s*$/,'');
+            const lines = raw.split('\n').map(x => x.replace(/\u00a0/g, ' ')).filter(x => x.trim()).slice(0, 180);
+            const nodes = [];
+            for (let i=0; i<lines.length; i++) {
+                let line = lines[i];
+                const branch = line.match(/^(\s*(?:[│|]  |[ ]{2,}|[├└]──\s*)*)(.*)$/);
+                if (!branch) continue;
+                let body = branch[2].replace(/^\s*(?:[├└]──\s*)?/, '');
+                const marker = body.match(/^(?:[-*•+]\s+|\d+[.)]\s+|[a-zA-Z][.)]\s+|#{1,6}\s+|[–—]\s+)(.*)$/);
+                const marked = Boolean(marker);
+                if (marker) body = marker[1];
+                body = body.replace(/\*\*/g, '').trim();
+                if (!body || body === '---') continue;
+                const ind = (line.match(/^\s*/) || [''])[0].length;
+                const treeLevel = (line.match(/^[│ ]*(?:[├└]──)/) || [''])[0];
+                let level = Math.floor(ind/2) + (treeLevel ? 1 : 0);
+                nodes.push({text:body.slice(0,240),level,marked,children:[]});
+            }
+            if (!nodes.length) return null;
+            // Dòng đầu là tâm; nếu toàn bộ dòng đều cùng mức, các dòng sau là nhánh cấp 1.
+            const root = {text:nodes[0].text,children:[],level:-1};
+            const rest = nodes.slice(1);
+            const base = rest.length ? Math.min(...rest.map(n=>n.level)) : 0;
+            const hasNesting = rest.some(n=>n.level>base);
+            const stack=[{node:root,depth:-1}];
+            for (const n of rest) {
+                let depth = hasNesting ? Math.max(0,n.level-base) : 0;
+                depth = Math.min(depth, stack[stack.length-1].depth+1);
+                while(stack.length>1 && stack[stack.length-1].depth>=depth) stack.pop();
+                stack[stack.length-1].node.children.push(n);
+                stack.push({node:n,depth});
+            }
+            return root;
         }
+        function traceRenderMindmap(outline) {
+            const root = traceParseMindmap(outline);
+            if (!root) return '<p class="text-neutral-500">Chưa có dữ liệu sơ đồ.</p>';
+            const draw = node => `<li class="trace-tree-item"><div class="trace-mindmap-node" title="${escapeHtml(node.text)}">${escapeHtml(node.text)}</div>${node.children.length ? `<ul>${node.children.map(draw).join('')}</ul>` : ''}</li>`;
+            return `<section class="trace-mindmap" aria-label="Sơ đồ tư duy"><div class="trace-map-actions"><span>🌳 Sơ đồ tư duy</span><button type="button" class="trace-map-copy" title="Sao chép nội dung" aria-label="Sao chép nội dung sơ đồ"><i class="fa fa-copy"></i> Sao chép</button></div><div class="trace-map-canvas"><ul class="trace-tree-root">${draw(root)}</ul></div><textarea class="trace-map-source" hidden>${escapeHtml(String(outline))}</textarea></section>`;
+        }
+        document.getElementById('chat-messages').addEventListener('click', async event => {
+            const btn = event.target.closest('.trace-map-copy');
+            if (!btn) return;
+            const value=btn.closest('.trace-mindmap')?.querySelector('.trace-map-source')?.value || '';
+            try { await navigator.clipboard.writeText(value); btn.textContent='✓ Đã sao chép'; }
+            catch (_) { const t=btn.closest('.trace-mindmap').querySelector('.trace-map-source'); t.hidden=false;t.select();document.execCommand('copy');t.hidden=true;btn.textContent='✓ Đã sao chép'; }
+        });
         function traceToggleAnswer(button) {
             const body = button.nextElementSibling;
             const isHidden = body.classList.toggle('hidden');
@@ -2433,6 +2484,21 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 return `${questionHtml}<div class="trace-answer"><button type="button" class="trace-answer-btn" onclick="traceToggleAnswer(this)"><i class="fa fa-eye"></i> Xem đáp án &amp; lời giải</button><div class="trace-answer-body hidden">${answerHtml}</div></div>`;
             }
             const mapParts = [];
+            // AI đôi khi quên rào code hoặc trả về markdown: nhận dạng danh sách có từ 3 nhánh.
+            if (tracePendingMode === 'mindmap' && !/```\s*mindmap/i.test(content) && !/^\s*❌/.test(content)) {
+                const rows=content.split('\n');
+                const start=rows.findIndex(line => /^\s*(?:[-*•+]\s+|(?:\d+[.)])\s+|[├└]──)/.test(line));
+                if(start>=0) {
+                    let end=start;
+                    while(end<rows.length && (rows[end].trim()==='' || /^\s*(?:[-*•+]\s+|(?:\d+[.)])\s+|[│├└] |[├└]──| {2,}\S)/.test(rows[end]))) end++;
+                    const branchLines=rows.slice(start,end).filter(x=>x.trim());
+                    if(branchLines.length>=3){
+                        const heading=rows.slice(0,start).filter(x=>x.trim()).pop() || 'Chủ đề chính';
+                        const outline=[heading.replace(/^#+\s*/,''),...branchLines].join('\n');
+                        content=rows.slice(0,start).join('\n')+'\n```mindmap\n'+outline+'\n```\n'+rows.slice(end).join('\n');
+                    }
+                }
+            }
             content = content.replace(/```\s*mindmap\s*\n([\s\S]*?)```/gi, (_, outline) => {
                 const index = mapParts.push(traceRenderMindmap(outline)) - 1;
                 return `TRACE_MINDMAP_SLOT_${index}`;
