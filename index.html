@@ -345,7 +345,7 @@ html[data-skin] .trace-stat .n{color:var(--sk-accent)}
 html[data-skin] .trace-mindmap{background:var(--sk-soft);border-color:var(--sk-border)}
 html[data-skin] .trace-mindmap-node{background:var(--sk-surface);color:var(--sk-text);border-color:var(--sk-border)}
 html[data-skin] .trace-answer-body{border-left-color:var(--sk-accent);background:var(--sk-soft)}
-html[data-skin="hacker"] *{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Inter',monospace}html[data-skin="hacker"] .fa{font-family:FontAwesome}html[data-skin="hacker"] .katex{font-family:KaTeX_Main,"Times New Roman",serif}
+html[data-skin="hacker"] body :not(.fa):not(.katex):not(.katex *){font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Inter',monospace}
 html[data-skin="neon"] .shadow-card,html[data-skin="hacker"] .shadow-card{box-shadow:0 0 0 1px var(--sk-border),0 0 26px var(--sk-glow)}
 
 /* ===== Nền hiệu ứng ===== */
@@ -500,7 +500,6 @@ html[data-skin] .trace-mindmap-node{overflow-wrap:anywhere;white-space:normal}
 .trace-map-actions{position:sticky;left:0;z-index:1}
 #chat-messages{overflow-anchor:auto;overscroll-behavior:contain}
 #fx-canvas{contain:strict}
-
 @media(max-width:720px){.sk-panel{border-radius:20px;padding:12px}.sk-grid{grid-template-columns:minmax(0,1fr)}.glass{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}.mode-tabs{backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media(prefers-reduced-motion:reduce){.sk-card:hover,.model-card:hover,.trace-prompt-chip:hover{transform:none!important}}
 html[data-skin="peach"][data-theme="dark"] .sk-prev,html[data-skin="ocean"][data-theme="dark"] .sk-prev,html[data-skin="snow"][data-theme="dark"] .sk-prev,html[data-skin="lava"][data-theme="dark"] .sk-prev{filter:saturate(.88)}
@@ -574,7 +573,6 @@ input,textarea,select { max-width:100%; }
 .sk-card,.mode-tab,.vbtn,.trace-prompt-chip { transition-property:transform,background-color,border-color,color,box-shadow; transition-duration:220ms; transition-timing-function:cubic-bezier(.22,1,.36,1); }
 .sk-card:active,.mode-tab:active { transform:scale(.985); }
 @media(max-width:720px){#fx-canvas{opacity:.7}.sk-card{content-visibility:visible}}
-@media(prefers-reduced-motion:reduce){#fx-canvas{display:none!important}}
 </style>
 
 <style id="trace-performance-v4">
@@ -591,23 +589,27 @@ header.glass{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 </style>
 <style id="trace-v4-smooth">
 html body,html[data-theme="dark"] body{background-attachment:scroll!important}
-#chat-messages,#en-messages{overscroll-behavior-y:auto!important;will-change:scroll-position;contain:layout paint style}
+#chat-messages,#en-messages{overscroll-behavior-y:auto!important}
 #fx-canvas{contain:strict}
 
 @media(pointer:coarse),(max-width:767px){.mode-tabs,header.glass{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}#chat-messages,#en-messages{will-change:auto}}
 html{scroll-behavior:auto}
-
-/* ===== V7 ===== */
-html.is-scrolling .sk-card,html.is-scrolling .model-card,html.is-scrolling .mode-tab,html.is-scrolling .vbtn,html.is-scrolling .trace-prompt-chip,html.is-scrolling .sk-btn{transition:none!important}
-html[data-skin] .sk-card:hover,.sk-card:hover{box-shadow:0 6px 14px -10px rgba(0,0,0,.35)!important}
-/* ===== V6: cuộn mượt ===== */
-header.glass,.mode-tabs,.sk-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent)!important}
-#chat-messages .shadow-sm,#en-messages .shadow-sm,#chat-messages .shadow-md,#en-messages .shadow-md{box-shadow:none!important}
-#chat-messages>*,#en-messages>*{contain:layout style}
-.typing-dot{will-change:transform}
 </style>
-<script>(function(){var t=0,on=function(){window.__scrolling=true;document.documentElement.classList.add('is-scrolling');clearTimeout(t);t=setTimeout(function(){window.__scrolling=false;document.documentElement.classList.remove('is-scrolling')},140)};['scroll','wheel','touchmove'].forEach(function(e){addEventListener(e,on,{capture:true,passive:true})})})();</script>
+
+<style id="trace-fps-v6">
+/* V6 — mượt khi kéo trang: bỏ làm mờ nền (backdrop-filter) vì nền đang chuyển động,
+   mỗi khung hình trình duyệt phải làm mờ lại -> rất tốn GPU, gây giật. */
+.glass,header.glass,.mode-tabs,.sk-overlay,#modal-overlay,#camera-overlay,.backdrop-blur-sm{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html:not([data-skin]) .glass{background:rgba(255,255,255,.95)}
+html[data-theme="dark"]:not([data-skin]) .glass{background:rgba(15,23,42,.95)}
+html[data-skin] .glass{background:color-mix(in srgb,var(--sk-surface) 95%,transparent)}
+html[data-skin] .mode-tabs{background:color-mix(in srgb,var(--sk-surface) 92%,transparent)}
+.sk-overlay{background:rgba(0,0,0,.62)}
+#modal-overlay{background:rgba(0,0,0,.55)}
+#camera-overlay{background:rgba(0,0,0,.7)}
+/* Canvas hiệu ứng: lớp riêng, cao đúng bằng bitmap (JS đặt) */
+#fx-canvas{position:fixed;left:0;top:0;width:100%;z-index:0;pointer-events:none;contain:strict}
+</style>
 </head>
 <body class="font-sans text-neutral-800 min-h-screen flex flex-col scroll-smooth">
     <!-- Header -->
@@ -973,6 +975,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
             </div>
             <div class="sk-tools">
                 <button type="button" id="sk-mode-switch" class="sk-btn" aria-label="Chuyển chế độ sáng tối">🌙 Chế độ tối</button>
+                <button type="button" id="sk-fx-switch" class="sk-btn" aria-label="Bật tắt hiệu ứng nền động">✨ Hiệu ứng nền: Bật</button>
                 <label class="sk-search"><i class="fa fa-search"></i><input type="text" id="sk-search" placeholder="Tìm theme..." autocomplete="off"></label>
                 <div class="sk-levels" id="sk-levels"><span>CẤP ĐỘ:</span></div>
             </div>
@@ -1311,12 +1314,16 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
         // ====================== CHAT ======================
         let chatHistory = [];   // nhớ ngữ cảnh các lượt trước (chỉ chữ)
         let sending = false;
+        let traceEpoch = 0;   // tăng mỗi lần đổi mục: trả lời của mục cũ đến muộn sẽ bị bỏ, không hiện sang mục mới
         async function sendMessage() {
             if (sending) return false;
             const typed = userInput.value.trim();
             const images = pendingImages.slice();
+            // Bài kiểm tra: "1.A", "1 b", "2C"... được chấm ngay trong app, không cần gọi AI
+            if (!images.length && typeof traceTryQuizAnswer === 'function' && traceTryQuizAnswer(typed)) { userInput.value = ''; return true; }
             if ((!typed && !images.length) || !CONFIG.isConfigured) return false;
             sending = true;
+            const epoch = traceEpoch;
             stopSpeaking();
             if (recog) stopListening();
             const question = typed || 'Hãy giải thích nội dung trong hình ảnh này.';
@@ -1329,6 +1336,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
             if (voiceMode) setVoiceStatus('🤔 Đang suy nghĩ...');
             try {
                 const answer = await callAI(question, images, voiceMode);
+                if (epoch !== traceEpoch) return true;
                 removeLoading(loadingId);
                 addMessage(answer, 'ai');
                 chatHistory.push({ role: 'user', text: question }, { role: 'assistant', text: answer.length > 1800 ? answer.slice(0, 1800) + '…' : answer });
@@ -1340,6 +1348,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                     speak(answer);
                 }
             } catch (err) {
+                if (epoch !== traceEpoch) return true;
                 removeLoading(loadingId);
                 if (err.friendly) {
                     addMessage(`❌ ${err.message}`, 'ai');
@@ -1349,7 +1358,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                 console.error(err);
                 if (voiceMode) stopVoiceMode();
             } finally {
-                sending = false; window.traceOnDelta = null;
+                if (epoch === traceEpoch) { sending = false; window.traceOnDelta = null; }
             }
             return true;
         }
@@ -2480,14 +2489,16 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             study: { label: 'Học tập', emoji: '📚', title: 'Trace AI — Gia sư học tập', subtitle: 'Giải thích kiến thức theo từng bước, có ví dụ và câu hỏi kiểm tra nhanh.', placeholder: 'Nhập môn học, chủ đề hoặc bài tập cần hiểu…', prompts: ['Giải thích một khái niệm theo từng bước', 'Giải bài tập và nêu vì sao từng bước đúng', 'Tạo kế hoạch ôn tập 7 ngày'], instruction: 'Bạn đang ở chế độ GIA SƯ HỌC TẬP. Bắt buộc trả lời bằng tiếng Việt. Giải thích theo thứ tự: ý chính, các bước dễ hiểu, ví dụ, lỗi thường gặp và 1–3 câu kiểm tra nhanh không kèm đáp án. Không chỉ đưa kết quả; hãy giúp người học hiểu vì sao.' },
             debug: { label: 'Sửa lỗi code', emoji: '🔍', title: 'Trace AI — Phân tích và sửa lỗi', subtitle: 'Dán code và thông báo lỗi để tìm nguyên nhân, bản sửa và cách phòng tránh.', placeholder: 'Dán code và thông báo lỗi vào đây…', prompts: ['Tìm và sửa lỗi trong đoạn code này:', 'Giải thích thông báo lỗi này:', 'Review code và tìm bug tiềm ẩn:'], instruction: 'Bạn đang ở chế độ DEBUG CODE. Trả lời bằng tiếng Việt. Trình bày: (1) nguyên nhân, (2) code đã sửa trong khối code có nhãn ngôn ngữ, (3) giải thích thay đổi, (4) cách phòng tránh. Không tự bịa thư viện/hàm; nếu thiếu dữ kiện hãy nêu giả định.' },
             mindmap: { label: 'Sơ đồ tư duy', emoji: '🌳', title: 'Trace AI — Sơ đồ tư duy', subtitle: 'Nhập một chủ đề hoặc dán bài học để tạo sơ đồ cây trực quan, dễ nhớ.', placeholder: 'Nhập chủ đề cần tạo sơ đồ tư duy…', prompts: ['Vẽ sơ đồ tư duy về chu trình nước', 'Tạo sơ đồ tư duy về các thì tiếng Anh', 'Tóm tắt bài học sau thành sơ đồ tư duy:'], instruction: 'Bạn đang ở chế độ SƠ ĐỒ TƯ DUY. Trả lời bằng tiếng Việt, mở đầu bằng một câu ngắn, rồi xuất đúng một khối code có nhãn mindmap. Dòng đầu là chủ đề trung tâm; các nhánh bắt đầu bằng "- "; mỗi cấp con thụt vào 2 dấu cách. Có 4–7 nhánh chính, mỗi ý là cụm từ ngắn, không viết câu dài. Sau sơ đồ thêm 2 mẹo ghi nhớ.' },
-            quiz: { label: 'Bài kiểm tra', emoji: '📝', title: 'Trace AI — Bài kiểm tra', subtitle: 'Tạo đề luyện tập theo chủ đề, số câu và độ khó; phần đáp án sẽ được ẩn sau nút xem.', placeholder: 'Ví dụ: Toán 8 — phân thức đại số — 10 câu trắc nghiệm…', prompts: ['Tạo 10 câu trắc nghiệm Toán về:', 'Tạo 5 câu tự luận có lời giải về:', 'Tạo một đề khó hơn về:'], instruction: 'Bạn đang ở chế độ TẠO BÀI KIỂM TRA. Trả lời bằng tiếng Việt. Trước tiên đưa ra đề và các lựa chọn, không tiết lộ đáp án trong phần câu hỏi. Sau đó đặt đúng dòng ===ĐÁP ÁN=== rồi cung cấp đáp án và lời giải rõ ràng. Nếu người học gửi chuỗi đáp án, hãy chấm điểm, giải thích câu sai và khuyến khích họ.' },
+            quiz: { label: 'Bài kiểm tra', emoji: '📝', title: 'Trace AI — Bài kiểm tra', subtitle: 'Tạo đề luyện tập theo chủ đề, số câu và độ khó; làm xong gõ 1.A, 2 b… để được chấm ngay; đáp án nằm sau nút xem.', placeholder: 'Ví dụ: Toán 8 — phân thức đại số — 10 câu trắc nghiệm…', prompts: ['Tạo 10 câu trắc nghiệm Toán về:', 'Tạo 5 câu tự luận có lời giải về:', 'Tạo một đề khó hơn về:'], instruction: 'Bạn đang ở chế độ TẠO BÀI KIỂM TRA. Trả lời bằng tiếng Việt. Với đề trắc nghiệm: đánh số "Câu 1.", "Câu 2."…, mỗi câu có đúng 4 lựa chọn A. B. C. D. (mỗi lựa chọn một dòng riêng, chỉ có một đáp án đúng) và không tiết lộ đáp án trong phần câu hỏi. Hết đề, đặt đúng một dòng ===ĐÁP ÁN===; ngay dòng kế tiếp viết bảng đáp án gọn dạng "1.A 2.C 3.B …" (mỗi câu một số và một chữ cái); sau đó mới viết lời giải ngắn gọn cho từng câu, mỗi lời giải bắt đầu bằng "Câu N:". Người học sẽ gõ đáp án như "1.A", "1 b" hoặc "2C" và ứng dụng tự chấm điểm; nếu họ hỏi thêm hoặc nhờ giải thích, hãy trả lời dựa trên đề đã tạo.' },
             progress: { label: 'Lộ trình', emoji: '📈', title: 'Trace AI — Lộ trình học tập', subtitle: 'Theo dõi các phiên học tập, sửa lỗi, sơ đồ tư duy và bài kiểm tra đã tạo.', placeholder: '', prompts: [], instruction: '' }
         };
         let traceMode = store.get('trace_mode') || (store.get('mode') === 'en' ? 'en' : 'qa');
         if (!TRACE_MODE_META[traceMode]) traceMode = 'qa';
         let traceLastQuestion = '';
         let tracePendingMode = traceMode;
-        let traceSavedChatHtml = chatMessages.innerHTML;
+        const traceInitialChatHtml = chatMessages.innerHTML;
+        let traceQuiz = null;      // đề trắc nghiệm đang làm (đáp án đọc từ đề AI vừa tạo)
+        let traceBooted = false;
         const traceInfo = document.getElementById('trace-mode-info');
         const traceInputPanel = chatCard.children[1];
         const traceWelcomeTitle = document.querySelector('#welcome-section h2');
@@ -2506,16 +2517,37 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         let traceRecords = traceLoadRecords();
         function traceSaveRecords() { store.set(TRACE_PROGRESS_KEY, JSON.stringify(traceRecords.slice(-60))); }
         function traceModeButtons() { return Array.from(document.querySelectorAll('.mode-tabs [data-trace-mode]')); }
+        const TRACE_WELCOME = {
+            study: '📚 **Chế độ Học tập**\nNhập môn học hoặc chủ đề bạn muốn học. Mình sẽ giải thích từng bước, có ví dụ và vài câu hỏi kiểm tra nhanh.',
+            debug: '🔍 **Chế độ Sửa lỗi code**\nDán đoạn code và thông báo lỗi (nếu có). Mình sẽ tìm nguyên nhân, đưa bản sửa và cách phòng tránh.',
+            mindmap: '🌳 **Chế độ Sơ đồ tư duy**\nNhập một chủ đề hoặc dán bài học, mình sẽ vẽ sơ đồ cây để bạn dễ nhớ.',
+            quiz: '📝 **Chế độ Bài kiểm tra**\nNhập môn, chủ đề, số câu và độ khó để mình tạo đề.\n\n✍️ Làm xong cứ trả lời ngay trong khung chat theo dạng **số + chữ cái**, ví dụ: **1.A**, **2 b**, **3C**. Mình chấm từng câu cho bạn ngay. Có thể gửi nhiều câu một lần: **1A 2C 3B**.'
+        };
+        // Mỗi lần sang mục khác: xóa sạch chat cũ + bộ nhớ ngữ cảnh, hiện lời chào của mục mới.
+        function traceResetChat(mode) {
+            traceEpoch++; sending = false; window.traceOnDelta = null;
+            stopSpeaking();
+            chatHistory = []; traceQuiz = null; traceLastQuestion = '';
+            pendingImages = []; renderPreviews(); userInput.value = '';
+            tracePendingMode = mode;
+            if (mode === 'progress') return;       // renderTraceProgress sẽ tự vẽ
+            chatMessages.innerHTML = '';
+            if (TRACE_WELCOME[mode]) traceOriginalAddMessage(TRACE_WELCOME[mode], 'ai');
+            else chatMessages.innerHTML = traceInitialChatHtml;
+            chatMessages.scrollTop = 0;
+        }
         function traceSetMode(mode, baseAlreadySet = false) {
             if (!TRACE_MODE_META[mode]) mode = 'qa';
             const previous = traceMode;
-            if (mode === 'progress' && previous !== 'progress') traceSavedChatHtml = chatMessages.innerHTML;
-            if (previous === 'progress' && mode !== 'progress' && traceSavedChatHtml) {
-                chatMessages.innerHTML = traceSavedChatHtml;
-            }
+            const changed = mode !== previous;
             traceMode = mode;
             store.set('trace_mode', mode);
             if (!baseAlreadySet) setMode(mode === 'en' ? 'en' : 'qa');
+            if (changed || !traceBooted) {
+                if (changed && previous === 'en') enReset();   // rời phần luyện tiếng Anh: xóa luôn hội thoại cũ
+                traceResetChat(mode);
+            }
+            traceBooted = true;
             traceModeButtons().forEach(btn => btn.classList.toggle('active', btn.dataset.traceMode === mode));
             const meta = TRACE_MODE_META[mode];
             traceWelcomeTitle.textContent = meta.title;
@@ -2542,10 +2574,6 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 traceQuickPrompts.appendChild(button);
             });
             if (mode === 'progress') renderTraceProgress();
-            else if (previous === 'progress' && traceSavedChatHtml) {
-                chatMessages.innerHTML = traceSavedChatHtml;
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
         }
         document.getElementById('tab-qa').addEventListener('click', () => traceSetMode('qa', true));
         document.getElementById('tab-en').addEventListener('click', () => traceSetMode('en', true));
@@ -2561,9 +2589,12 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             tracePendingMode = activeMode;
             traceLastQuestion = String(question || '').trim();
             const instruction = TRACE_MODE_META[activeMode]?.instruction || '';
-            const augmentedQuestion = instruction
+            let augmentedQuestion = instruction
                 ? `[CHẾ ĐỘ: ${TRACE_MODE_META[activeMode].label}]\n${instruction}\n\nYÊU CẦU CỦA NGƯỜI HỌC:\n${question}`
                 : question;
+            if (activeMode === 'quiz' && traceQuiz) {
+                augmentedQuestion += `\n\n[ĐỀ VÀ ĐÁP ÁN ĐANG LÀM — chỉ dùng khi người học hỏi về đề này; nếu họ yêu cầu tạo đề mới thì bỏ qua]\n${traceQuiz.raw}`;
+            }
             return traceOriginalCallAI(augmentedQuestion, images, spoken);
         };
 
@@ -2586,10 +2617,97 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             if (mode === 'quiz') {
                 const total = (plain.match(/(?:Câu|Question)\s*\d+\s*[.:]/gi) || []).length;
                 item.total = total;
+                const parsed = traceParseQuiz(plain);
+                if (parsed) { parsed.recordId = item.id; item.total = parsed.total; traceQuiz = parsed; }
+                else if (!/={3,}\s*ĐÁP ÁN/i.test(plain)) return;   // trả lời hỏi thêm/giải thích: không tính là một đề mới
             }
             traceRecords.push(item);
             traceRecords = traceRecords.slice(-60);
             traceSaveRecords();
+        }
+
+        // ---------- Bài kiểm tra: đọc đáp án từ đề & chấm "1.A", "1 b", "2C"... ----------
+        const TRACE_KEY_TOKEN = '(?:^|[^\\p{L}\\p{N}])(\\d{1,3})\\s*[.):\\-–—=|]?\\s*\\**\\s*([A-Fa-f])(?![\\p{L}])';
+        function traceParseQuiz(text) {
+            const m = String(text).match(/={3,}\s*ĐÁP ÁN[^=\n]*={3,}/i);
+            if (!m) return null;
+            const qPart = text.slice(0, m.index), aPart = text.slice(m.index + m[0].length);
+            const key = {};
+            let t;
+            const tok = new RegExp(TRACE_KEY_TOKEN, 'gu');
+            while ((t = tok.exec(aPart))) { const n = +t[1]; if (!(n in key)) key[n] = t[2].toUpperCase(); }
+            // Dự phòng: "Câu 3: ... đáp án đúng là C"
+            const alt = /C[âa]u\s*(\d{1,3})\s*[:.)\-–—]?[^\n]{0,60}?(?:đáp án|chọn|là)\s*(?:đúng\s*)?(?:là\s*)?[:\-]?\s*\**\s*([A-Fa-f])(?![\p{L}])/giu;
+            while ((t = alt.exec(aPart))) { const n = +t[1]; if (!(n in key)) key[n] = t[2].toUpperCase(); }
+            const nums = Object.keys(key).map(Number);
+            if (!nums.length) return null;
+            let maxQ = 0;
+            for (const q of qPart.matchAll(/C[âa]u\s*(\d{1,3})/gi)) maxQ = Math.max(maxQ, +q[1]);
+            const total = Math.max(maxQ, ...nums);
+            // Lời giải từng câu (để hiện khi bạn trả lời sai)
+            const expl = {}; let cur = null;
+            for (const line of aPart.split('\n')) {
+                const lm = line.match(/^\s*(?:[-*•]\s*)?\**\s*(?:C[âa]u\s*)?(\d{1,3})\s*[.):\-–—]/i);
+                const many = (line.match(new RegExp(TRACE_KEY_TOKEN, 'gu')) || []).length > 1;
+                if (lm && !many) { cur = +lm[1]; expl[cur] = line.trim(); }
+                else if (cur && line.trim()) expl[cur] += ' ' + line.trim();
+            }
+            for (const n of Object.keys(expl)) {
+                let e = expl[n].replace(/^\s*(?:[-*•]\s*)?\**\s*(?:C[âa]u\s*)?\d{1,3}\s*[.):\-–—]\s*\**/i, '').replace(/\*\*/g, '').trim();
+                if (e.length < 12) delete expl[n]; else expl[n] = e.length > 320 ? e.slice(0, 320).replace(/\s+\S*$/, '') + '…' : e;
+            }
+            return { key, expl, total, answers: {}, raw: String(text).slice(0, 7000), recordId: null };
+        }
+        // Chỉ nhận tin nhắn gồm toàn "số + 1 chữ cái": 1.A | 1.a | 1 a | 1 A | 1A | câu 1 a | 1A 2C 3B
+        function traceParseAnswerInput(text) {
+            const t = String(text || '').trim();
+            if (!t || t.length > 400) return null;
+            const one = '(?:c[âa]u\\s*)?\\d{1,3}\\s*[.):\\-–—=]?\\s*[a-fA-F](?![\\p{L}])';
+            if (!new RegExp('^(?:' + one + '[\\s,;.]*)+$', 'iu').test(t)) return null;
+            const out = [];
+            for (const m of t.matchAll(/(\d{1,3})\s*[.):\-–—=]?\s*([a-fA-F])(?![\p{L}])/gu)) out.push({ n: +m[1], letter: m[2].toUpperCase() });
+            return out.length ? out : null;
+        }
+        function traceTryQuizAnswer(text) {
+            if (traceMode !== 'quiz') return false;
+            const picks = traceParseAnswerInput(text);
+            if (!picks) return false;
+            tracePendingMode = 'quiz';
+            traceOriginalAddMessage(text, 'user');
+            const q = traceQuiz;
+            if (!q) {
+                traceOriginalAddMessage('📝 Mình chưa có đề trắc nghiệm nào để chấm. Hãy nhập môn, chủ đề và số câu để mình tạo đề trước (ví dụ: Toán 8 — phân thức — 10 câu trắc nghiệm), rồi trả lời kiểu **1.A**, **2 b**…', 'ai');
+                return true;
+            }
+            const lines = [];
+            for (const { n, letter } of picks) {
+                if (n < 1 || n > q.total) { lines.push(`⚠️ **Câu ${n}** không có trong đề (đề có ${q.total} câu).`); continue; }
+                if (!(n in q.key)) { lines.push(`⚠️ **Câu ${n}** chưa có đáp án để chấm.`); continue; }
+                q.answers[n] = letter;
+                if (q.key[n] === letter) lines.push(`✅ **Câu ${n}:** bạn chọn **${letter}** — Đúng!`);
+                else {
+                    let l = `❌ **Câu ${n}:** bạn chọn **${letter}** — chưa đúng, đáp án là **${q.key[n]}**.`;
+                    if (q.expl[n]) l += `\n💡 ${q.expl[n]}`;
+                    lines.push(l);
+                }
+            }
+            const keyed = Object.keys(q.key).map(Number).sort((a, b) => a - b);
+            const answered = keyed.filter(n => n in q.answers);
+            const correct = answered.filter(n => q.answers[n] === q.key[n]).length;
+            lines.push('');
+            if (answered.length < keyed.length) {
+                const left = keyed.filter(n => !(n in q.answers));
+                lines.push(`📊 Đã làm **${answered.length}/${keyed.length}** câu · đúng **${correct}**`);
+                lines.push(`Còn lại: câu ${left.join(', ')}`);
+            } else {
+                const pct = Math.round(correct * 100 / keyed.length);
+                const msg = pct >= 90 ? 'Xuất sắc! 👏' : pct >= 70 ? 'Khá tốt, ôn lại các câu sai là chắc điểm cao rồi.' : pct >= 50 ? 'Cố gắng thêm chút nữa, xem lại lời giải các câu sai nhé.' : 'Đừng nản, xem lại lời giải rồi thử một đề mới nhé 💪';
+                lines.push(`🎉 **Hoàn thành!** Điểm: **${correct}/${keyed.length}** (${pct}%). ${msg}`);
+            }
+            const rec = traceRecords.find(r => r.id === q.recordId);
+            if (rec) { rec.score = correct; rec.answered = answered.length; if (!rec.total) rec.total = keyed.length; traceSaveRecords(); }
+            traceOriginalAddMessage(lines.join('\n'), 'ai');
+            return true;
         }
         const traceOriginalAddMessage = addMessage;
         addMessage = function(content, sender, images = []) {
@@ -2699,7 +2817,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 const question = escapeHtml(record.question || record.label || 'Phiên học');
                 const date = new Date(record.date).toLocaleString('vi-VN');
                 const summary = escapeHtml(record.summary || 'Đã hoàn thành một hoạt động học tập.');
-                return `<div class="trace-progress-item"><p><strong>${escapeHtml(record.label || TRACE_MODE_META[record.mode]?.label || 'Hoạt động')}</strong> · ${question}</p><small>${date}</small><p style="margin-top:7px;color:var(--tc-muted);font-size:.8rem">${summary}</p>${record.outline ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:#2563EB;font-size:.8rem;font-weight:700">Xem nội dung sơ đồ</summary><pre style="white-space:pre-wrap;margin-top:6px">${escapeHtml(record.outline)}</pre></details>` : ''}</div>`;
+                return `<div class="trace-progress-item"><p><strong>${escapeHtml(record.label || TRACE_MODE_META[record.mode]?.label || 'Hoạt động')}</strong>${record.score != null ? ` · 🎯 ${record.score}/${record.total || record.answered}` : ''} · ${question}</p><small>${date}</small><p style="margin-top:7px;color:var(--tc-muted);font-size:.8rem">${summary}</p>${record.outline ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:#2563EB;font-size:.8rem;font-weight:700">Xem nội dung sơ đồ</summary><pre style="white-space:pre-wrap;margin-top:6px">${escapeHtml(record.outline)}</pre></details>` : ''}</div>`;
             }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Học tập, Sửa lỗi code, Sơ đồ tư duy hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
             chatMessages.innerHTML = `<div class="trace-stat-grid">${statHtml}</div><section class="trace-progress-section"><div class="flex items-center justify-between gap-3 flex-wrap"><h3>🧭 Hoạt động gần đây</h3><button type="button" id="trace-clear-progress" class="trace-clear">Xóa lộ trình</button></div><div>${recentHtml}</div></section><p style="font-size:.72rem;text-align:center;color:var(--tc-muted)">Lịch sử này chỉ được lưu trong trình duyệt trên thiết bị của bạn.</p>`;
             chatMessages.scrollTop = 0;
@@ -2724,194 +2842,286 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         const RAR = { common: {t: 'MIỄN PHÍ', c:'#64748B'} };
         const SKINS = [
           {id:'peach',name:'Theme Bình minh đào',rar:'common',fx:'network',cols:['#E88AB0','#F08A3E','#E6477F','#F4A261'],desc:'Sắc hồng cam ấm áp, giữ nguyên tinh thần Bình minh đào.',prev:{bg:'linear-gradient(135deg,#F6DDF0,#FBD3C8 55%,#F9C8A8)',tag:'🍑 Bình minh',ico:'🍑',title:'PEACH MORNING',sub:'Bình minh hồng đào',tc:'#8A3410'}},
-          {id:'ocean',name:'Theme Đại dương',rar:'common',fx:'bubbles',cols:['#7DD3FC','#38BDF8','#BAE6FD'],desc:'Bọt bong bóng trong suốt nhẹ nhàng nổi lên từ đáy biển.',prev:{bg:'linear-gradient(135deg,#0E7490,#2563EB 60%,#38BDF8)',tag:'🫧 Bong bóng',ico:'🫧',title:'OCEAN BREEZE',sub:'Đại dương xanh mát'}},
-          {id:'snow',name:'Theme Tuyết',rar:'common',fx:'snow',cols:['#FFFFFF','#CDEFFF','#86BDE3'],desc:'Những bông tuyết trắng xoay nhẹ và rơi từ trên xuống.',prev:{bg:'linear-gradient(135deg,#8CC8F2,#D8EDFF 65%,#6699CB)',tag:'❄ Tuyết rơi',ico:'❄️',title:'SNOWFALL',sub:'Mùa đông dịu nhẹ'}},
+          {id:'ocean',name:'Theme Đại dương',rar:'common',fx:'bubbles',cols:['#7DD3FC','#38BDF8','#BAE6FD'],colsLight:['#0EA5E9','#0284C7','#38BDF8'],desc:'Bọt bong bóng trong suốt nhẹ nhàng nổi lên từ đáy biển.',prev:{bg:'linear-gradient(135deg,#0E7490,#2563EB 60%,#38BDF8)',tag:'🫧 Bong bóng',ico:'🫧',title:'OCEAN BREEZE',sub:'Đại dương xanh mát'}},
+          {id:'snow',name:'Theme Tuyết',rar:'common',fx:'snow',cols:['#FFFFFF','#CDEFFF','#A8D4F5'],colsLight:['#5B9BD5','#7FB3E3','#3E7FBF'],desc:'Những bông tuyết trắng xoay nhẹ và rơi từ trên xuống.',prev:{bg:'linear-gradient(135deg,#8CC8F2,#D8EDFF 65%,#6699CB)',tag:'❄ Tuyết rơi',ico:'❄️',title:'SNOWFALL',sub:'Mùa đông dịu nhẹ'}},
           {id:'hacker',name:'Theme Hacker',rar:'common',fx:'matrix',cols:['#22C55E'],desc:'Giữ giao diện hacker và mưa ký tự Matrix, tốc độ chậm hơn.',prev:{bg:'linear-gradient(180deg,#02150B,#010603)',tag:'>_ shell',ico:'● REC',title:'$ init_matrix_protocol',sub:'[SYSTEM ACCESS GRANTED]',tc:'#34D399',mono:true}},
-          {id:'lava',name:'Theme Dung nham',rar:'common',fx:'sparks',cols:['#FFCA65','#FF822B','#FF4B1F'],desc:'Nền đỏ cam nóng rực, những tia lửa bay lên nhẹ nhàng.',prev:{bg:'linear-gradient(140deg,#45100F,#C53B13 55%,#FF8E24)',tag:'🔥 Tia lửa',ico:'🔥',title:'MOLTEN LAVA',sub:'Dung nham rực cháy'}},
+          {id:'lava',name:'Theme Dung nham',rar:'common',fx:'sparks',cols:['#FFCA65','#FF822B','#FF4B1F'],colsLight:['#FFFFFF','#FFE066','#C2300A'],desc:'Nền đỏ cam nóng rực, những tia lửa bay lên nhẹ nhàng.',prev:{bg:'linear-gradient(140deg,#45100F,#C53B13 55%,#FF8E24)',tag:'🔥 Tia lửa',ico:'🔥',title:'MOLTEN LAVA',sub:'Dung nham rực cháy'}},
         ];
         const CLASSIC = {id:'classic',name:'Theme Cổ điển xanh',fx:'none',cols:[]};
         const byId = (id) => id === 'classic' ? CLASSIC : SKINS.find(s => s.id === id);
         const DEFAULT_ID = 'classic';
         let saved = byId(store.get('skin')) ? store.get('skin') : DEFAULT_ID;
         let shown = saved;
+        const currentCols = () => { const s = byId(shown) || CLASSIC; return (fx.light && s.colsLight) ? s.colsLight : s.cols; };
         let filterR = 'all';
         let query = '';
 
-        // ---------- Nền hiệu ứng ----------
+        // ---------- Nền hiệu ứng (V6) ----------
+        // - Chạy theo tần số quét của màn hình (60/90/120 FPS), chuyển động tính theo thời gian thật.
+        // - KHÔNG dừng khi kéo/cuộn trang. Không bị ẩn bởi chế độ "giảm chuyển động" của máy.
+        // - Hình vẽ sẵn (sprite) + tự giảm số hạt nếu máy yếu thay vì giảm FPS.
         const cv = document.getElementById('fx-canvas');
-        let cx = null, worker = null;
-        const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-        const fx = { mode: 'none', cols: [], items: [], raf: 0, last: 0, acc: 0, W: 0, H: 0 };
-        const FX_WORKER_SRC = "const KANA = '\u30a2\u30a4\u30a6\u30a8\u30aa\u30ab\u30ad\u30af\u30b1\u30b3\u30b5\u30b7\u30b9\u30bb\u30bd\u30bf\u30c1\u30c4\u30c6\u30c8\u30ca\u30cb\u30cc\u30cd\u30ce0123456789ABCDEF';\n        const rnd = (a, b) => a + Math.random() * (b - a);\n\n        function initItems() {\n            const { W, H, mode, cols } = fx;\n            fx.items = [];\n            if (mode === 'network') {\n                const n = Math.max(12, Math.min(W < 700 ? 18 : 27, Math.round(W * H / 62000)));\n                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(0, H), vx: rnd(-.25, .25), vy: rnd(-.25, .25), r: rnd(2, 5.5), c: cols[i % cols.length] });\n            } else if (mode === 'petals') {\n                const n = W < 700 ? 13 : 24;\n                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(-H, H), vy: rnd(.6, 1.4), ph: rnd(0, 6.28), sw: rnd(.4, 1), s: rnd(6, 12), rot: rnd(0, 6.28), vr: rnd(-.03, .03), c: cols[i % cols.length] });\n            } else if (mode === 'stars') {\n                const n = Math.min(90, Math.round(W * H / 15000));\n                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(.5, 1.8), ph: rnd(0, 6.28), sp: rnd(.01, .04), c: cols[i % cols.length] });\n            } else if (mode === 'bubbles' || mode === 'snow' || mode === 'sparks') {\n                const n = W < 700 ? 19 : 32;\n                for(let i=0;i<n;i++) fx.items.push({x:rnd(0,W),y:rnd(0,H),r:rnd(mode==='sparks'?1:2,mode==='bubbles'?12:mode==='snow'?5:3.5),v:rnd(.35,mode==='sparks'?1.65:1.15),sway:rnd(0,6.28),drift:rnd(.15,.65),alpha:rnd(.35,.9),c:cols[i%cols.length],arms:6});\n            } else if (mode === 'matrix') {\n                const n = Math.ceil(W / 30);\n                for (let i = 0; i < n; i++) fx.items.push({ y: rnd(-H, 0) });\n            }\n        }\n        function draw(k) {\n            const { W, H, mode, items } = fx;\n            if (mode === 'none') return;\n            if (mode === 'matrix') {\n                if (reduce) return;\n                fx.acc += k;\n                if (fx.acc < 8) return;\n                fx.acc = 0;\n                cx.globalCompositeOperation = 'destination-out';\n                cx.fillStyle = 'rgba(0,0,0,.12)';\n                cx.fillRect(0, 0, W, H);\n                cx.globalCompositeOperation = 'source-over';\n                cx.font = '15px monospace';\n                items.forEach((d, i) => {\n                    const ch = KANA[(Math.random() * KANA.length) | 0];\n                    cx.globalAlpha = .9;\n                    cx.fillStyle = Math.random() > .93 ? '#D1FAE5' : '#22C55E';\n                    cx.fillText(ch, i * 30, d.y);\n                    d.y += 11;\n                    if (d.y > H && Math.random() > .975) d.y = rnd(-120, 0);\n                });\n                cx.globalAlpha = 1;\n                return;\n            }\n            cx.clearRect(0, 0, W, H);\n            if (mode === 'network') {\n                for (const p of items) {\n                    if (!reduce) {\n                        p.x += p.vx * k; p.y += p.vy * k;\n                        if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;\n                        if (p.y < -10) p.y = H + 10; else if (p.y > H + 10) p.y = -10;\n                    }\n                }\n                cx.lineWidth = 1;\n                for (let i = 0; i < items.length; i++) {\n                    for (let j = i + 1; j < items.length; j++) {\n                        const a = items[i], b = items[j];\n                        const dx = a.x - b.x, dy = a.y - b.y, d = Math.sqrt(dx * dx + dy * dy);\n                        if (d < 125) {\n                            cx.globalAlpha = (1 - d / 125) * .35;\n                            cx.strokeStyle = a.c;\n                            cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke();\n                        }\n                    }\n                }\n                for (const p of items) {\n                    cx.globalAlpha = .75;\n                    cx.fillStyle = p.c;\n                    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.2832); cx.fill();\n                }\n            } else if (mode === 'petals') {\n                for (const p of items) {\n                    if (!reduce) {\n                        p.ph += .02 * k; p.y += p.vy * k; p.x += Math.sin(p.ph) * p.sw * k; p.rot += p.vr * k;\n                        if (p.y > H + 20) { p.y = -20; p.x = rnd(0, W); }\n                    }\n                    cx.save();\n                    cx.translate(p.x, p.y); cx.rotate(p.rot);\n                    cx.globalAlpha = .7; cx.fillStyle = p.c;\n                    const s = p.s;\n                    cx.beginPath();\n                    cx.moveTo(0, -s);\n                    cx.bezierCurveTo(s * .9, -s * .6, s * .7, s * .5, 0, s);\n                    cx.bezierCurveTo(-s * .7, s * .5, -s * .9, -s * .6, 0, -s);\n                    cx.fill();\n                    cx.restore();\n                }\n            } else if (mode === 'bubbles' || mode === 'snow' || mode === 'sparks') {\n                for(const p of items){\n                    if(!reduce){p.sway+=.012*k;p.y+=(mode==='snow'?1:-1)*p.v*k;p.x+=Math.sin(p.sway)*p.drift*k;\n                      if(p.y < -25 || p.y > H+25){p.y=mode==='snow'?-15:H+15;p.x=rnd(0,W);}}\n                    cx.save();cx.translate(p.x,p.y);cx.globalAlpha=p.alpha;\n                    if(mode==='bubbles'){\n                        cx.strokeStyle=p.c;cx.lineWidth=1.6;cx.fillStyle='rgba(180,239,255,.12)';cx.beginPath();cx.arc(0,0,p.r,0,Math.PI*2);cx.fill();cx.stroke();\n                        cx.fillStyle='rgba(255,255,255,.7)';cx.beginPath();cx.ellipse(-p.r*.32,-p.r*.32,Math.max(1,p.r*.22),Math.max(1,p.r*.11),-.7,0,Math.PI*2);cx.fill();\n                    }else if(mode==='snow'){\n                        cx.strokeStyle=p.c;cx.lineWidth=1.1;for(let a=0;a<3;a++){cx.save();cx.rotate(a*Math.PI/3);cx.beginPath();cx.moveTo(-p.r*1.5,0);cx.lineTo(p.r*1.5,0);cx.stroke();cx.restore();}\n                    }else{\n                        cx.fillStyle=p.c;cx.globalAlpha=p.alpha*.25;cx.beginPath();cx.arc(0,0,p.r*2.6,0,6.2832);cx.fill();cx.globalAlpha=p.alpha;cx.beginPath();cx.arc(0,0,p.r,0,6.2832);cx.fill();\n                    }cx.restore();\n                }\n            } else if (mode === 'stars') {\n                for (const s of items) {\n                    if (!reduce) s.ph += s.sp * k;\n                    cx.globalAlpha = .35 + .65 * Math.abs(Math.sin(s.ph));\n                    cx.fillStyle = s.c;\n                    cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.2832); cx.fill();\n                }\n            }\n            cx.globalAlpha = 1;\n        }\n        // Hi\u1ec7u \u1ee9ng chuy\u1ec3n \u0111\u1ed9ng m\u01b0\u1ee3t, t\u1ef1 c\u00e2n b\u1eb1ng FPS theo thi\u1ebft b\u1ecb v\u00e0 t\u1ea3i khung h\u00ecnh.\n        \nlet cv=null,cx=null,reduce=false,frameBudget=33.34,mobile=false,running=true,slow=0,fast=0;\nconst fx={mode:'none',cols:[],items:[],raf:0,last:0,acc:0,W:0,H:0};\nconst raf=self.requestAnimationFrame?f=>self.requestAnimationFrame(f):f=>setTimeout(()=>f(performance.now()),16);\nconst caf=self.cancelAnimationFrame?i=>self.cancelAnimationFrame(i):i=>clearTimeout(i);\nfunction stopLoop(){if(fx.raf)caf(fx.raf);fx.raf=0;fx.last=0}\nfunction startLoop(){stopLoop();if(fx.mode!=='none'&&!reduce&&running)fx.raf=raf(loop)}\nfunction loop(t){fx.raf=raf(loop);if(!fx.last){fx.last=t;return}const el=t-fx.last;if(el<frameBudget-1)return;fx.last=t;const st=performance.now();draw(Math.min(el/16.67,2.6));const w=performance.now()-st;\nif(w>12){slow++;fast=0}else{fast++;if(slow)slow--}\nif(slow>=10){frameBudget=Math.min(mobile?55:50,frameBudget+8);slow=0}if(fast>=180){frameBudget=Math.max(mobile?40:33.34,frameBudget-8);fast=0}}\nfunction setSize(W,H,dpr,force){const w=Math.round(W*dpr),h=Math.round(H*dpr);if(!force&&fx.W===W&&fx.H===H&&cv.width===w)return;fx.W=W;fx.H=H;cv.width=w;cv.height=h;cx.setTransform(dpr,0,0,dpr,0,0);initItems();draw(1)}\nonmessage=e=>{const m=e.data;\nif(m.t==='init'){cv=m.canvas;cx=cv.getContext('2d',{alpha:true});reduce=m.reduce;mobile=m.mobile;frameBudget=mobile?40:33.34}\nelse if(m.t==='mode'){fx.mode=m.mode;fx.cols=m.cols||[];if(m.mode==='none'){stopLoop();return}setSize(m.W,m.H,m.dpr,true);startLoop()}\nelse if(m.t==='size'){if(fx.mode!=='none')setSize(m.W,m.H,m.dpr,false)}\nelse if(m.t==='run'){running=m.on;if(m.on)startLoop();else stopLoop()}};\n";
-        (function () {
-            if (window.OffscreenCanvas && window.Worker && cv.transferControlToOffscreen) {
-                try {
-                    worker = new Worker(URL.createObjectURL(new Blob([FX_WORKER_SRC], { type: 'text/javascript' })));
-                    const oc = cv.transferControlToOffscreen();
-                    worker.postMessage({ t: 'init', canvas: oc, reduce, mobile: !!(window.matchMedia && window.matchMedia('(max-width: 720px), (pointer: coarse)').matches) }, [oc]);
-                } catch (e) { worker = null; }
-            }
-            if (!worker) cx = cv.getContext('2d', { alpha: true, desynchronized: true }) || cv.getContext('2d');
-        })();
-        const KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF';
+        const cx = cv.getContext('2d', {alpha:true});
+        const isMobile = !!(window.matchMedia && window.matchMedia('(max-width: 720px), (pointer: coarse)').matches);
+        const fx = { mode:'none', cols:[], light:false, items:[], raf:0, last:0, time:0, W:0, H:0, dpr:1,
+                     q:1, ema:0, slow:0, fast:0, S:null, on: store.get('fx') !== 'off' };
         const rnd = (a, b) => a + Math.random() * (b - a);
+        const TAU = Math.PI * 2;
+        const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF';
+
+        // Tạo sprite sắc nét theo độ phân giải màn hình
+        function mk(size, fn) {
+            const c = document.createElement('canvas');
+            c.width = c.height = Math.ceil(size * fx.dpr);
+            const g = c.getContext('2d');
+            g.scale(fx.dpr, fx.dpr); g.translate(size / 2, size / 2);
+            fn(g);
+            return c;
+        }
+        const BUB_R = [3, 5, 7.5, 10, 12.5];
+        const SNOW_R = [2, 3, 4, 5];
+        const SPARK_R = [1.5, 2.2, 3, 3.8];
+
+        function buildSprites() {
+            const { mode, cols, light } = fx, S = {};
+            if (mode === 'bubbles') {
+                S.bub = cols.map(col => BUB_R.map(r => mk(2 * r + 6, g => {
+                    g.fillStyle = light ? 'rgba(56,189,248,.14)' : 'rgba(180,239,255,.12)';
+                    g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill();
+                    g.strokeStyle = col; g.lineWidth = 1.6; g.stroke();
+                    g.fillStyle = light ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.7)';
+                    g.beginPath(); g.ellipse(-r * .32, -r * .32, Math.max(1, r * .22), Math.max(1, r * .11), -.7, 0, TAU); g.fill();
+                })));
+            } else if (mode === 'snow') {
+                S.snow = cols.map(col => SNOW_R.map(r => mk(r * 3.4 + 4, g => {
+                    g.strokeStyle = col; g.lineCap = 'round'; g.lineWidth = r > 3 ? 1.3 : 1.1;
+                    for (let a = 0; a < 3; a++) {
+                        g.save(); g.rotate(a * Math.PI / 3);
+                        g.beginPath(); g.moveTo(-r * 1.5, 0); g.lineTo(r * 1.5, 0);
+                        if (r >= 3) { // nhánh nhỏ cho bông tuyết to
+                            for (const s of [-1, 1]) {
+                                g.moveTo(s * r * .85, 0); g.lineTo(s * r * 1.15, -r * .38);
+                                g.moveTo(s * r * .85, 0); g.lineTo(s * r * 1.15, r * .38);
+                            }
+                        }
+                        g.stroke(); g.restore();
+                    }
+                })));
+            } else if (mode === 'sparks') {
+                S.spark = cols.map(col => SPARK_R.map(r => mk(r * 7, g => {
+                    const gr = g.createRadialGradient(0, 0, 0, 0, 0, r * 3.2);
+                    gr.addColorStop(0, col); gr.addColorStop(.28, col);
+                    gr.addColorStop(.36, col + '66'); gr.addColorStop(1, col + '00');
+                    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r * 3.2, 0, TAU); g.fill();
+                })));
+            } else if (mode === 'matrix') {
+                const cw = 18, ch = 20, n = GLYPHS.length, d = fx.dpr;
+                const c = document.createElement('canvas');
+                c.width = Math.ceil(n * cw * d); c.height = Math.ceil(2 * ch * d);
+                const g = c.getContext('2d');
+                g.scale(d, d); g.font = '15px ui-monospace,Menlo,Consolas,monospace';
+                g.textAlign = 'center'; g.textBaseline = 'middle';
+                const body = light ? '#15803D' : '#22C55E', head = light ? '#052E16' : '#D1FAE5';
+                for (let i = 0; i < n; i++) {
+                    g.fillStyle = body; g.fillText(GLYPHS[i], i * cw + cw / 2, ch / 2);
+                    g.fillStyle = head; g.fillText(GLYPHS[i], i * cw + cw / 2, ch + ch / 2);
+                }
+                S.atlas = c; S.cw = cw; S.ch = ch;
+            }
+            fx.S = S;
+        }
 
         function initItems() {
             const { W, H, mode, cols } = fx;
-            fx.items = [];
+            const items = fx.items = [];
             if (mode === 'network') {
-                const n = Math.max(12, Math.min(W < 700 ? 18 : 27, Math.round(W * H / 62000)));
-                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(0, H), vx: rnd(-.25, .25), vy: rnd(-.25, .25), r: rnd(2, 5.5), c: cols[i % cols.length] });
-            } else if (mode === 'petals') {
-                const n = W < 700 ? 13 : 24;
-                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(-H, H), vy: rnd(.6, 1.4), ph: rnd(0, 6.28), sw: rnd(.4, 1), s: rnd(6, 12), rot: rnd(0, 6.28), vr: rnd(-.03, .03), c: cols[i % cols.length] });
-            } else if (mode === 'stars') {
-                const n = Math.min(90, Math.round(W * H / 15000));
-                for (let i = 0; i < n; i++) fx.items.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(.5, 1.8), ph: rnd(0, 6.28), sp: rnd(.01, .04), c: cols[i % cols.length] });
-            } else if (mode === 'bubbles' || mode === 'snow' || mode === 'sparks') {
-                const n = W < 700 ? 19 : 32;
-                for(let i=0;i<n;i++) fx.items.push({x:rnd(0,W),y:rnd(0,H),r:rnd(mode==='sparks'?1:2,mode==='bubbles'?12:mode==='snow'?5:3.5),v:rnd(.35,mode==='sparks'?1.65:1.15),sway:rnd(0,6.28),drift:rnd(.15,.65),alpha:rnd(.35,.9),c:cols[i%cols.length],arms:6});
+                const n = Math.max(12, Math.min(isMobile ? 18 : 27, Math.round(W * H / 62000)));
+                for (let i = 0; i < n; i++) items.push({ x: rnd(0, W), y: rnd(0, H), vx: rnd(-15, 15), vy: rnd(-15, 15), r: rnd(2, 5.5), c: cols[i % cols.length] });
+            } else if (mode === 'bubbles') {
+                const n = isMobile ? 20 : 34;
+                for (let i = 0; i < n; i++) {
+                    const b = Math.random() < .55 ? (Math.random() * 2 | 0) : (Math.random() * BUB_R.length | 0);
+                    items.push({ x: rnd(0, W), y: rnd(0, H), b, ci: i % cols.length, v: rnd(22, 52) + b * 5, ph: rnd(0, TAU), ps: rnd(.5, 1.1), dr: rnd(8, 30), a: rnd(.45, .95) });
+                }
+            } else if (mode === 'snow') {
+                const n = isMobile ? 26 : 46;
+                for (let i = 0; i < n; i++) {
+                    const b = Math.random() * SNOW_R.length | 0;
+                    items.push({ x: rnd(0, W), y: rnd(0, H), b, ci: i % cols.length, v: rnd(24, 62) - b * 2, ph: rnd(0, TAU), ps: rnd(.5, 1.2), dr: rnd(10, 34), rot: rnd(0, TAU), vr: rnd(-.9, .9), a: rnd(.6, 1) });
+                }
+            } else if (mode === 'sparks') {
+                const n = isMobile ? 24 : 40;
+                for (let i = 0; i < n; i++) {
+                    const b = Math.random() * SPARK_R.length | 0;
+                    items.push({ x: rnd(0, W), y: rnd(0, H), b, ci: i % cols.length, v: rnd(26, 95), ph: rnd(0, TAU), ps: rnd(.5, 1.2), dr: rnd(10, 36), fl: rnd(5, 11), a: rnd(.6, 1) });
+                }
             } else if (mode === 'matrix') {
-                const n = Math.ceil(W / 30);
-                for (let i = 0; i < n; i++) fx.items.push({ y: rnd(-H, 0) });
+                const colW = isMobile ? 26 : 28, rowH = 18;
+                const rows = Math.ceil(H / rowH) + 1, nc = Math.ceil(W / colW);
+                fx.mx = { colW, rowH, rows, cols: [] };
+                for (let i = 0; i < nc; i++) {
+                    fx.mx.cols.push({ x: i * colW + colW / 2, h: -rnd(0, rows * .9), v: rnd(4.2, 6.2),
+                        lit: new Float32Array(rows).fill(-99), chr: new Uint8Array(rows) });
+                }
             }
         }
-        function draw(k) {
-            const { W, H, mode, items } = fx;
-            if (mode === 'none') return;
+
+        function draw(dt) {
+            const { W, H, mode, items, S } = fx;
+            if (mode === 'none' || !S) return;
+            const now = fx.time;
+            const nUse = Math.max(1, Math.ceil(items.length * fx.q));
+
             if (mode === 'matrix') {
-                if (reduce) return;
-                fx.acc += k;
-                if (fx.acc < 8) return;
-                fx.acc = 0;
-                cx.globalCompositeOperation = 'destination-out';
-                cx.fillStyle = 'rgba(0,0,0,.12)';
-                cx.fillRect(0, 0, W, H);
-                cx.globalCompositeOperation = 'source-over';
-                cx.font = '15px monospace';
-                items.forEach((d, i) => {
-                    const ch = KANA[(Math.random() * KANA.length) | 0];
-                    cx.globalAlpha = .9;
-                    cx.fillStyle = Math.random() > .93 ? '#D1FAE5' : '#22C55E';
-                    cx.fillText(ch, i * 30, d.y);
-                    d.y += 11;
-                    if (d.y > H && Math.random() > .975) d.y = rnd(-120, 0);
-                });
+                const m = fx.mx, nc = Math.max(1, Math.ceil(m.cols.length * Math.max(.5, fx.q)));
+                const TRAIL = 2.7, TAUF = .95, FIN = .09;
+                const cw = S.cw, ch = S.ch, d = fx.dpr;
+                cx.clearRect(0, 0, W, H);
+                for (let ci = 0; ci < nc; ci++) {
+                    const c = m.cols[ci], prev = Math.floor(c.h);
+                    c.h += c.v * dt;
+                    const cur = Math.floor(c.h);
+                    for (let r = prev + 1; r <= cur; r++) {
+                        if (r >= 0 && r < m.rows) { c.lit[r] = now; c.chr[r] = Math.random() * GLYPHS.length | 0; }
+                    }
+                    if (Math.random() < .05) { const rr = cur - 1 - (Math.random() * 8 | 0); if (rr >= 0 && rr < m.rows) c.chr[rr] = Math.random() * GLYPHS.length | 0; }
+                    if (cur - m.rows > 18) c.h = -rnd(2, m.rows * .7);
+                    const r0 = Math.max(0, cur - 22), r1 = Math.min(m.rows - 1, cur);
+                    for (let r = r0; r <= r1; r++) {
+                        const age = now - c.lit[r];
+                        if (age < 0 || age > TRAIL) continue;
+                        let a = Math.exp(-age / TAUF);
+                        if (age < FIN) a *= age / FIN;
+                        if (a < .04) continue;
+                        cx.globalAlpha = a * .95;
+                        const gi = c.chr[r];
+                        cx.drawImage(S.atlas, gi * cw * d, (r === cur ? ch * d : 0), cw * d, ch * d, c.x - cw / 2, r * m.rowH - ch / 2 + m.rowH / 2, cw, ch);
+                    }
+                }
                 cx.globalAlpha = 1;
                 return;
             }
+
             cx.clearRect(0, 0, W, H);
+
             if (mode === 'network') {
-                for (const p of items) {
-                    if (!reduce) {
-                        p.x += p.vx * k; p.y += p.vy * k;
-                        if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;
-                        if (p.y < -10) p.y = H + 10; else if (p.y > H + 10) p.y = -10;
-                    }
+                for (let i = 0; i < nUse; i++) {
+                    const p = items[i];
+                    p.x += p.vx * dt; p.y += p.vy * dt;
+                    if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;
+                    if (p.y < -10) p.y = H + 10; else if (p.y > H + 10) p.y = -10;
                 }
                 cx.lineWidth = 1;
-                for (let i = 0; i < items.length; i++) {
-                    for (let j = i + 1; j < items.length; j++) {
-                        const a = items[i], b = items[j];
-                        const dx = a.x - b.x, dy = a.y - b.y, d = Math.sqrt(dx * dx + dy * dy);
-                        if (d < 125) {
-                            cx.globalAlpha = (1 - d / 125) * .35;
+                const lim = 125, lim2 = lim * lim, lineA = fx.light ? .5 : .38;
+                for (let i = 0; i < nUse; i++) {
+                    const a = items[i];
+                    for (let j = i + 1; j < nUse; j++) {
+                        const b = items[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+                        if (d2 < lim2) {
+                            cx.globalAlpha = (1 - Math.sqrt(d2) / lim) * lineA;
                             cx.strokeStyle = a.c;
                             cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke();
                         }
                     }
                 }
-                for (const p of items) {
-                    cx.globalAlpha = .75;
+                cx.globalAlpha = .8;
+                for (let i = 0; i < nUse; i++) {
+                    const p = items[i];
                     cx.fillStyle = p.c;
-                    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.2832); cx.fill();
+                    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, TAU); cx.fill();
                 }
-            } else if (mode === 'petals') {
-                for (const p of items) {
-                    if (!reduce) {
-                        p.ph += .02 * k; p.y += p.vy * k; p.x += Math.sin(p.ph) * p.sw * k; p.rot += p.vr * k;
-                        if (p.y > H + 20) { p.y = -20; p.x = rnd(0, W); }
-                    }
-                    cx.save();
-                    cx.translate(p.x, p.y); cx.rotate(p.rot);
-                    cx.globalAlpha = .7; cx.fillStyle = p.c;
-                    const s = p.s;
-                    cx.beginPath();
-                    cx.moveTo(0, -s);
-                    cx.bezierCurveTo(s * .9, -s * .6, s * .7, s * .5, 0, s);
-                    cx.bezierCurveTo(-s * .7, s * .5, -s * .9, -s * .6, 0, -s);
-                    cx.fill();
-                    cx.restore();
+            } else if (mode === 'bubbles') {
+                for (let i = 0; i < nUse; i++) {
+                    const p = items[i];
+                    p.ph += p.ps * dt; p.y -= p.v * dt; p.x += Math.sin(p.ph) * p.dr * dt;
+                    if (p.y < -30) { p.y = H + 20; p.x = rnd(0, W); }
+                    const sp = S.bub[p.ci][p.b], sz = sp.width / fx.dpr;
+                    // bong bóng mờ dần khi lên gần mép trên, "vỡ" nhẹ
+                    cx.globalAlpha = p.a * Math.min(1, Math.max(0, p.y / (H * .12 + 1)));
+                    cx.drawImage(sp, p.x - sz / 2, p.y - sz / 2, sz, sz);
                 }
-            } else if (mode === 'bubbles' || mode === 'snow' || mode === 'sparks') {
-                for(const p of items){
-                    if(!reduce){p.sway+=.012*k;p.y+=(mode==='snow'?1:-1)*p.v*k;p.x+=Math.sin(p.sway)*p.drift*k;
-                      if(p.y < -25 || p.y > H+25){p.y=mode==='snow'?-15:H+15;p.x=rnd(0,W);}}
-                    cx.save();cx.translate(p.x,p.y);cx.globalAlpha=p.alpha;
-                    if(mode==='bubbles'){
-                        cx.strokeStyle=p.c;cx.lineWidth=1.6;cx.fillStyle='rgba(180,239,255,.12)';cx.beginPath();cx.arc(0,0,p.r,0,Math.PI*2);cx.fill();cx.stroke();
-                        cx.fillStyle='rgba(255,255,255,.7)';cx.beginPath();cx.ellipse(-p.r*.32,-p.r*.32,Math.max(1,p.r*.22),Math.max(1,p.r*.11),-.7,0,Math.PI*2);cx.fill();
-                    }else if(mode==='snow'){
-                        cx.strokeStyle=p.c;cx.lineWidth=1.1;for(let a=0;a<3;a++){cx.save();cx.rotate(a*Math.PI/3);cx.beginPath();cx.moveTo(-p.r*1.5,0);cx.lineTo(p.r*1.5,0);cx.stroke();cx.restore();}
-                    }else{
-                        cx.fillStyle=p.c;cx.globalAlpha=p.alpha*.25;cx.beginPath();cx.arc(0,0,p.r*2.6,0,6.2832);cx.fill();cx.globalAlpha=p.alpha;cx.beginPath();cx.arc(0,0,p.r,0,6.2832);cx.fill();
-                    }cx.restore();
+            } else if (mode === 'snow') {
+                const dp = fx.dpr;
+                for (let i = 0; i < nUse; i++) {
+                    const p = items[i];
+                    p.ph += p.ps * dt; p.y += p.v * dt; p.x += Math.sin(p.ph) * p.dr * dt; p.rot += p.vr * dt;
+                    if (p.y > H + 20) { p.y = -20; p.x = rnd(0, W); }
+                    const sp = S.snow[p.ci][p.b], sz = sp.width / dp;
+                    const c = Math.cos(p.rot) * dp, s = Math.sin(p.rot) * dp;
+                    cx.setTransform(c, s, -s, c, p.x * dp, p.y * dp);
+                    cx.globalAlpha = p.a;
+                    cx.drawImage(sp, -sz / 2, -sz / 2, sz, sz);
                 }
-            } else if (mode === 'stars') {
-                for (const s of items) {
-                    if (!reduce) s.ph += s.sp * k;
-                    cx.globalAlpha = .35 + .65 * Math.abs(Math.sin(s.ph));
-                    cx.fillStyle = s.c;
-                    cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.2832); cx.fill();
+                cx.setTransform(dp, 0, 0, dp, 0, 0);
+            } else if (mode === 'sparks') {
+                for (let i = 0; i < nUse; i++) {
+                    const p = items[i];
+                    p.ph += p.ps * dt; p.y -= p.v * dt; p.x += Math.sin(p.ph) * p.dr * dt;
+                    if (p.y < -30) { p.y = H + 20; p.x = rnd(0, W); }
+                    const sp = S.spark[p.ci][p.b], sz = sp.width / fx.dpr;
+                    // lấp lánh + tắt dần khi bay lên cao
+                    const fade = Math.min(1, Math.max(0, (p.y + 20) / (H * .45)));
+                    cx.globalAlpha = p.a * fade * (.65 + .35 * Math.sin(now * p.fl + p.ph * 3));
+                    cx.drawImage(sp, p.x - sz / 2, p.y - sz / 2, sz, sz);
                 }
             }
             cx.globalAlpha = 1;
         }
-        // Hiệu ứng chuyển động mượt, tự cân bằng FPS theo thiết bị và tải khung hình.
-        // Không gọi thêm timer riêng: chỉ 1 requestAnimationFrame khi tab hiển thị.
-        const mobileFX = window.matchMedia && window.matchMedia('(max-width: 720px), (pointer: coarse)').matches;
-        let frameBudget = mobileFX ? 40 : 33.34; // 25 FPS trên mobile, 30 FPS desktop; giữ nguyên chuyển động
-        let slowFrames = 0, fastFrames = 0;
+
         function loop(t) {
             fx.raf = requestAnimationFrame(loop);
             if (!fx.last) { fx.last = t; return; }
-            const elapsed = t - fx.last;
-            if (window.__scrolling || elapsed < frameBudget - 1) return;
-            fx.last = t;
-            const started = performance.now();
-            draw(Math.min(elapsed / 16.67, 2.6));
-            const work = performance.now() - started;
-            // Tự giảm chất lượng khi máy yếu; phục hồi mượt khi máy đủ nhanh.
-            if (work > 12) { slowFrames++; fastFrames = 0; }
-            else { fastFrames++; if (slowFrames) slowFrames--; }
-            if (slowFrames >= 10) { frameBudget = Math.min(mobileFX ? 55 : 50, frameBudget + 8); slowFrames = 0; }
-            if (fastFrames >= 180) { frameBudget = Math.max(mobileFX ? 40 : 33.34, frameBudget - 8); fastFrames = 0; }
+            let dt = (t - fx.last) / 1000; fx.last = t;
+            if (dt > .1) dt = .1;           // sau khi quay lại tab: không "nhảy" hạt
+            if (dt <= 0) return;
+            fx.time += dt;
+            const w0 = performance.now();
+            draw(dt);
+            // Máy yếu: bớt số hạt (giữ nguyên FPS), máy khỏe lại: tăng dần trở lại.
+            fx.ema += ((performance.now() - w0) - fx.ema) * .1;
+            if (fx.ema > 6) { fx.slow++; fx.fast = 0; } else { fx.fast++; fx.slow = 0; }
+            if (fx.slow > 24 && fx.q > .4) { fx.q = Math.max(.4, fx.q - .15); fx.slow = 0; }
+            if (fx.fast > 600 && fx.q < 1) { fx.q = Math.min(1, fx.q + .1); fx.fast = 0; }
         }
         function stopLoop() { if (fx.raf) cancelAnimationFrame(fx.raf); fx.raf = 0; fx.last = 0; }
-        function startLoop() { stopLoop(); if (fx.mode !== 'none' && !reduce && !document.hidden && window.innerWidth > 0) fx.raf = requestAnimationFrame(loop); }
-        function resize() {
-            const dpr = Math.min(window.devicePixelRatio || 1, mobileFX ? 1 : 1.15);
-            const nextW = Math.max(1, window.innerWidth), nextH = Math.max(1, window.innerHeight);
-            if (fx.W === nextW && fx.H === nextH && cv.width) return;
-            fx.W = nextW; fx.H = nextH;
+        function startLoop() { stopLoop(); if (fx.mode !== 'none' && fx.on && !document.hidden) fx.raf = requestAnimationFrame(loop); }
+
+        // Thay đổi kích thước: điện thoại hay ẩn/hiện thanh địa chỉ khi kéo -> KHÔNG dựng lại hạt.
+        function resize(force) {
+            const nextW = Math.max(1, window.innerWidth);
+            const nextH = Math.max(1, window.innerHeight, isMobile ? (window.screen && window.screen.height) || 0 : 0);
+            const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 1.25);
+            if (!force && fx.W === nextW && nextH <= fx.H && dpr === fx.dpr && cv.width) return;
+            fx.W = nextW; fx.H = nextH; fx.dpr = dpr;
             cv.width = Math.round(fx.W * dpr); cv.height = Math.round(fx.H * dpr);
+            cv.style.height = fx.H + 'px';
             cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            initItems();
-            draw(1);
+            buildSprites(); initItems();
+            draw(0);
         }
-        function setFx(mode, cols) {
-            fx.mode = mode; fx.cols = cols || [];
-            cv.style.display = mode === 'none' ? 'none' : 'block';
-            cv.style.opacity = mode === 'matrix' ? (root.dataset.theme === 'dark' ? '.55' : '.36') : '1';
-            if (mode === 'none') { if (worker) worker.postMessage({ t: 'mode', mode: 'none' }); else stopLoop(); return; }
-            if (worker) { worker.postMessage({ t: 'mode', mode, cols: fx.cols, W: Math.max(1, innerWidth), H: Math.max(1, innerHeight), dpr: Math.min(window.devicePixelRatio || 1, mobileFX ? 1 : 1.15) }); return; }
-            resize();
+        function fxOpacity() { return fx.mode === 'matrix' ? (fx.light ? '.5' : '.55') : (fx.light ? '.9' : '1'); }
+        function setFx(mode) {
+            fx.mode = mode; fx.light = root.dataset.theme !== 'dark'; fx.cols = currentCols();
+            const show = mode !== 'none' && fx.on;
+            if (!show) { stopLoop(); cv.style.display = 'none'; return; }
+            cv.style.display = 'block';
+            cv.style.transition = 'none'; cv.style.opacity = '0';
+            fx.q = 1; fx.ema = 0; fx.time = 0;
+            resize(true);
             startLoop();
+            requestAnimationFrame(() => requestAnimationFrame(() => { cv.style.transition = 'opacity .7s ease'; cv.style.opacity = fxOpacity(); }));
         }
-        window.refreshSkinFX = () => { if(fx.mode !== 'none') { cv.style.opacity = fx.mode === 'matrix' ? (root.dataset.theme === 'dark' ? '.55' : '.36') : '1'; } };
-        let resizeFrame = 0;
-        window.addEventListener('resize', () => { if (fx.mode === 'none' || resizeFrame) return; resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; if (worker) worker.postMessage({ t: 'size', W: Math.max(1, innerWidth), H: Math.max(1, innerHeight), dpr: Math.min(window.devicePixelRatio || 1, mobileFX ? 1 : 1.15) }); else resize(); }); }, {passive:true});
-        document.addEventListener('visibilitychange', () => { if (worker) worker.postMessage({ t: 'run', on: !document.hidden }); else if (document.hidden) stopLoop(); else startLoop(); });
+        // Gọi khi đổi sáng/tối: đổi màu hạt theo chế độ
+        window.refreshSkinFX = () => {
+            if (fx.mode === 'none' || !fx.on) return;
+            fx.light = root.dataset.theme !== 'dark';
+            fx.cols = currentCols();
+            buildSprites(); initItems();
+            cv.style.transition = 'opacity .5s ease'; cv.style.opacity = fxOpacity();
+        };
+        let resizeTimer = 0;
+        window.addEventListener('resize', () => { if (fx.mode === 'none' || !fx.on) return; clearTimeout(resizeTimer); resizeTimer = setTimeout(() => resize(false), 160); }, {passive:true});
+        document.addEventListener('visibilitychange', () => { if (document.hidden) stopLoop(); else startLoop(); });
 
         // ---------- Áp dụng skin ----------
         function apply(id) {
@@ -2920,7 +3130,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             else root.setAttribute('data-skin', s.id);
             root.setAttribute('data-theme', store.get('theme') === 'dark' ? 'dark' : 'light');
             shown = s.id;
-            setFx(s.fx, s.cols);
+            setFx(s.fx);
             const tb = document.getElementById('theme-btn');
             if (tb) { tb.innerHTML = root.dataset.theme === 'dark' ? '<i class="fa fa-sun-o text-primary text-lg"></i>' : '<i class="fa fa-moon-o text-primary text-lg"></i>'; tb.title = 'Chuyển sáng / tối'; tb.setAttribute('aria-label', 'Chuyển sáng / tối'); }
         }
@@ -2975,7 +3185,16 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             syncModeButton();
             renderGrid();
         });
+        function syncFxButton(){
+            const b = document.getElementById('sk-fx-switch');
+            if(b) b.textContent = fx.on ? '✨ Hiệu ứng nền: Bật' : '✨ Hiệu ứng nền: Tắt';
+        }
+        document.getElementById('sk-fx-switch').addEventListener('click', () => {
+            fx.on = !fx.on; store.set('fx', fx.on ? 'on' : 'off');
+            apply(saved); syncFxButton();
+        });
         function openShop() {
+            syncFxButton();
             modal.hidden = false;
             document.body.style.overflow = 'hidden';
             renderLevels(); renderGrid();
