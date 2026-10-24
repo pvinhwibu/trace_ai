@@ -704,6 +704,80 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
 #en-accent{padding:7px 10px;border-radius:12px;border:1px solid var(--sk-border);background:var(--sk-surface);color:var(--sk-text);font-size:.8rem;font-weight:600}
 @media(max-width:640px){.tmx-view{height:58vh}.tmx{min-width:min(78vw,600px)}}
 </style>
+<style id="trace-voice-v12-css">
+/* ===== V12: ẩn/hiện lịch + giọng nói, bảng nói chuyện kiểu ChatGPT Voice ===== */
+.hdr-tg{position:relative}
+.hdr-tg.off{opacity:.6}
+.hdr-tg.off::after{content:"";position:absolute;left:9px;right:9px;top:50%;height:2.5px;border-radius:2px;background:currentColor;transform:rotate(-40deg);opacity:1;box-shadow:0 0 0 1.5px var(--sk-surface,#fff);pointer-events:none}
+.hdr-tg i{font-size:1.05rem}
+html.side-off .app-side{display:none!important}
+@media(min-width:1024px){html.side-off .app-layout{grid-template-columns:minmax(0,1fr)!important}}
+@keyframes voSideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+html.side-in .app-side{animation:voSideIn .38s cubic-bezier(.22,1,.36,1)}
+html.voice-off #voice-bar,html.voice-off #mic-btn,html.voice-off #talk-btn,html.voice-off .speak-btn,
+html.voice-off #en-voice-btn,html.voice-off #en-auto-btn,html.voice-off #en-stop-speak,html.voice-off #en-mic,html.voice-off #en-accent,html.voice-off #en-status{display:none!important}
+#talk-btn{background:var(--sk-grad);color:var(--sk-on,#fff);border:0;cursor:pointer;box-shadow:0 4px 14px var(--sk-glow,rgba(37,99,235,.2));transition:transform .2s,box-shadow .2s}
+#talk-btn:hover{transform:translateY(-1px) scale(1.04);box-shadow:0 6px 20px var(--sk-glow,rgba(37,99,235,.3))}
+#talk-btn svg{width:20px;height:20px}
+@media(max-width:480px){#chat-form,#en-form{gap:4px!important}#chat-form button,#en-form button{width:36px!important;min-width:36px!important}}
+
+.vo{position:fixed;inset:0;height:100dvh;z-index:55;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(26px + env(safe-area-inset-bottom,0px));
+  color:var(--sk-text);background:radial-gradient(900px 620px at 50% 38%,color-mix(in srgb,var(--sk-accent) 20%,var(--sk-surface)) 0%,var(--sk-surface) 72%);
+  opacity:0;transform:scale(1.02);transition:opacity .25s ease,transform .3s cubic-bezier(.22,1,.36,1);overscroll-behavior:contain;touch-action:manipulation}
+.vo[hidden]{display:none}
+.vo.on{opacity:1;transform:none}
+.vo-top{width:100%;display:flex;justify-content:center}
+.vo-chip{font-size:.82rem;font-weight:700;padding:7px 14px;border-radius:999px;background:var(--sk-soft);color:var(--sk-accent);border:1px solid var(--sk-border)}
+.vo-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;width:100%;max-width:640px;min-height:0}
+.vo-orb{--sz:clamp(170px,40vmin,290px);position:relative;width:var(--sz);height:var(--sz);border:0;padding:0;background:none;cursor:pointer;border-radius:50%;flex:none;margin-bottom:calc(var(--sz)*.2);-webkit-tap-highlight-color:transparent}
+.vo-orb:focus-visible{outline:3px solid var(--sk-accent);outline-offset:8px}
+.vo-glow{position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(circle,var(--sk-glow,rgba(37,99,235,.35)) 0%,transparent 68%);opacity:.5;pointer-events:none;will-change:opacity}
+.vo-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--sk-accent);opacity:0;pointer-events:none}
+.vo-core{position:absolute;inset:0;border-radius:50%;overflow:hidden;isolation:isolate;will-change:transform;
+  background:var(--sk-grad);box-shadow:0 18px 60px var(--sk-glow,rgba(37,99,235,.35)),inset 0 -18px 40px rgba(0,0,0,.18),inset 0 10px 28px rgba(255,255,255,.35)}
+.vo-blob{position:absolute;width:62%;height:62%;border-radius:50%;filter:blur(20px);opacity:.85;mix-blend-mode:screen}
+.vo-blob.b1{left:-8%;top:-6%;background:var(--sk-accent2,#7C3AED);animation:voD1 7s ease-in-out infinite}
+.vo-blob.b2{right:-10%;top:22%;background:var(--sk-accent);animation:voD2 9s ease-in-out infinite}
+.vo-blob.b3{left:18%;bottom:-14%;background:#fff;opacity:.55;animation:voD3 8s ease-in-out infinite}
+.vo-core::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.7) 0,rgba(255,255,255,0) 38%);pointer-events:none}
+@keyframes voD1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(48%,34%) scale(1.25)}}
+@keyframes voD2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-44%,30%) scale(.85)}}
+@keyframes voD3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(32%,-40%) scale(1.3)}}
+@keyframes voRing{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+@keyframes voSpin{to{transform:rotate(360deg)}}
+.vo[data-state="listening"] .vo-ring,.vo[data-state="speaking"] .vo-ring{animation:voRing 2.4s ease-out infinite}
+.vo[data-state="speaking"] .vo-ring{animation-duration:1.8s}
+.vo .vo-ring.r3{animation-delay:.8s!important}
+.vo .vo-ring.r4{animation-delay:1.6s!important}
+.vo[data-state="thinking"] .vo-core::before{content:"";position:absolute;inset:-30%;z-index:1;background:conic-gradient(from 0deg,transparent 0 55%,rgba(255,255,255,.55) 80%,transparent 100%);animation:voSpin 1.5s linear infinite;mix-blend-mode:overlay}
+.vo[data-state="thinking"] .vo-blob{animation-duration:2.6s}
+.vo[data-state="speaking"] .vo-blob{animation-duration:3.8s}
+.vo[data-state="muted"] .vo-core,.vo[data-state="idle"] .vo-core{filter:grayscale(.85) brightness(.95)}
+.vo[data-state="muted"] .vo-blob{animation-play-state:paused}
+.vo-status{font-size:clamp(1.15rem,3.4vw,1.5rem);font-weight:800;letter-spacing:.2px;text-align:center}
+.vo-cap{min-height:4.8em;max-width:100%;padding:0 6px;font-size:clamp(1rem,2.6vw,1.2rem);line-height:1.55;text-align:center;color:var(--sk-text);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;animation:voFade .25s ease}
+.vo-cap.user{color:var(--sk-muted);font-style:italic}
+.vo-cap:empty{animation:none}
+@keyframes voFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.vo-bar{display:flex;align-items:center;gap:22px}
+.vo-ctl{width:64px;height:64px;border-radius:50%;border:2px solid var(--sk-border);background:var(--sk-surface2);color:var(--sk-text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,background-color .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
+.vo-ctl:hover{transform:scale(1.07);border-color:var(--sk-accent)}
+.vo-ctl:active{transform:scale(.94)}
+.vo-ctl svg{width:26px;height:26px}
+.vo-ctl.off{background:rgba(239,68,68,.14);border-color:#EF4444;color:#EF4444}
+.vo-ctl.end{background:#EF4444;border-color:#EF4444;color:#fff}
+.vo-ctl.end:hover{background:#DC2626}
+.vo-hint{font-size:.78rem;color:var(--sk-muted);text-align:center;margin-top:14px;min-height:1.2em}
+.vo-foot{display:flex;flex-direction:column;align-items:center}
+@media(max-height:560px){.vo-stage{gap:10px}.vo-orb{--sz:clamp(110px,34vmin,200px)}.vo-cap{min-height:3.2em;-webkit-line-clamp:2}.vo-ctl{width:52px;height:52px}}
+@media(prefers-reduced-motion:reduce){.vo-blob,.vo-ring,.vo-core::before{animation:none!important}.vo{transition:none}}
+</style>
+<style id="trace-v13">
+#mic-btn,#en-mic{background:var(--sk-grad,linear-gradient(135deg,#2563EB,#7C3AED))!important;color:var(--sk-on,#fff)!important;border:0!important;box-shadow:0 4px 14px var(--sk-glow,rgba(37,99,235,.22))}
+#mic-btn:hover,#en-mic:hover{transform:translateY(-1px) scale(1.05)}
+.en-meta #en-reset,.en-meta #en-accent{flex:0 0 auto}
+</style>
 </head>
 <body class="font-sans text-neutral-800 min-h-screen flex flex-col scroll-smooth">
     <!-- Header -->
@@ -719,6 +793,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                 </div>
             </div>
             <div class="flex items-center gap-2">
+            <button id="side-btn" type="button" class="hdr-tg w-10 h-10 rounded-xl bg-white border border-neutral-200 flex items-center justify-center hover:border-primary/50 hover:shadow-md transition-all text-primary" aria-pressed="true" title="Ẩn lịch &amp; đồng hồ"><i class="fa fa-calendar"></i></button>
             <button id="theme-btn" type="button" aria-label="Đổi giao diện sáng/tối"
                 class="w-10 h-10 rounded-xl bg-white border border-neutral-200 flex items-center justify-center hover:border-primary/50 hover:shadow-md transition-all"></button>
             <button id="settings-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-neutral-200 hover:border-primary/50 hover:shadow-md transition-all text-sm font-medium text-neutral-700">
@@ -950,7 +1025,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                 <div class="p-4 border-t border-neutral-100 bg-white">
                     <!-- Xem trước ảnh đính kèm -->
                     <div id="image-preview" class="gap-2 flex-wrap mb-3" style="display:none"></div>
-                    <div class="voice-bar" id="voice-bar">
+                    <div class="voice-bar" id="voice-bar" style="display:none" aria-hidden="true">
                         <button type="button" id="autospeak-btn" class="vbtn"><i class="fa fa-volume-up"></i> <span>Tự đọc câu trả lời: Tắt</span></button>
                         <button type="button" id="stop-speak-btn" class="vbtn" style="display:none"><i class="fa fa-stop"></i> <span>Dừng đọc</span></button>
                         <span id="voice-status" class="vstatus"></span>
@@ -966,7 +1041,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                             class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white border-2 border-neutral-200 text-primary hover:border-primary/50 hover:bg-neutral-50 transition-all">
                             <i class="fa fa-camera"></i>
                         </button>
-                        <button type="button" id="mic-btn" title="Nói để nhập câu hỏi"
+                        <button type="button" id="mic-btn" title="Nói chuyện bằng giọng nói" aria-label="Nói chuyện bằng giọng nói"
                             class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white border-2 border-neutral-200 text-primary hover:border-primary/50 hover:bg-neutral-50 transition-all">
                             <i class="fa fa-microphone"></i>
                         </button>
@@ -993,11 +1068,11 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                         </label>
                     </div>
                     <div id="en-topics" class="en-topics"></div>
-                    <div class="en-hint">AI chỉ nói tiếng Anh với bạn và sẽ nhẹ nhàng sửa lỗi sai (dòng ✏️ Tip). Chọn một chủ đề để bắt đầu, hoặc bấm "Bắt đầu nói chuyện" để luyện nói rảnh tay.</div>
+                    <div class="en-hint">AI chỉ nói tiếng Anh với bạn và sẽ nhẹ nhàng sửa lỗi sai (dòng ✏️ Tip). Chọn một chủ đề để bắt đầu, hoặc bấm biểu tượng mic để luyện nói rảnh tay.</div>
                 </div>
                 <div id="en-messages" class="flex-1 p-4 md:p-6 overflow-y-auto bg-neutral-50/50 space-y-4"></div>
                 <div class="p-4 border-t border-neutral-100 bg-white">
-                    <div class="voice-bar">
+                    <div class="voice-bar" style="display:none" aria-hidden="true">
                         <button type="button" id="en-voice-btn" class="vbtn"><i class="fa fa-headphones"></i> <span>Bắt đầu nói chuyện</span></button>
                         <button type="button" id="en-auto-btn" class="vbtn"><i class="fa fa-volume-up"></i> <span>Tự đọc: Bật</span></button>
                         <button type="button" id="en-stop-speak" class="vbtn" style="display:none"><i class="fa fa-stop"></i> <span>Dừng đọc</span></button>
@@ -1005,7 +1080,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                         <span id="en-status" class="vstatus"></span>
                     </div>
                     <form id="en-form" class="flex gap-2 md:gap-3 items-center">
-                        <button type="button" id="en-mic" title="Nói tiếng Anh để nhập"
+                        <button type="button" id="en-mic" title="Nói chuyện bằng giọng nói" aria-label="Nói chuyện bằng giọng nói"
                             class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white border-2 border-neutral-200 text-primary hover:border-primary/50 hover:bg-neutral-50 transition-all">
                             <i class="fa fa-microphone"></i>
                         </button>
@@ -1057,6 +1132,26 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
     <footer class="py-4 text-center text-sm text-neutral-500">
         <p>© 2026 Trace AI — Học thông minh, tư duy chủ động 💙</p>
     </footer>
+    <!-- Bảng nói chuyện bằng giọng nói (kiểu ChatGPT Voice) -->
+    <div id="vo" class="vo" hidden role="dialog" aria-modal="true" aria-label="Trò chuyện bằng giọng nói" data-state="idle">
+        <div class="vo-top"><span class="vo-chip" id="vo-chip">🎙️ Tiếng Việt</span></div>
+        <div class="vo-stage">
+            <button type="button" class="vo-orb" id="vo-orb" aria-label="Chạm vào quả cầu để gửi hoặc ngắt lời">
+                <span class="vo-glow" id="vo-glow"></span>
+                <span class="vo-ring r2"></span><span class="vo-ring r3"></span><span class="vo-ring r4"></span>
+                <span class="vo-core" id="vo-core"><span class="vo-blob b1"></span><span class="vo-blob b2"></span><span class="vo-blob b3"></span></span>
+            </button>
+            <div class="vo-status" id="vo-status" aria-live="polite">Đang bật micro…</div>
+            <div class="vo-cap" id="vo-cap"></div>
+        </div>
+        <div class="vo-foot">
+            <div class="vo-bar">
+                <button type="button" class="vo-ctl" id="vo-mute" aria-label="Tắt micro" title="Tắt micro" aria-pressed="false"></button>
+                <button type="button" class="vo-ctl end" id="vo-end" aria-label="Kết thúc trò chuyện" title="Kết thúc (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+            <div class="vo-hint" id="vo-hint"></div>
+        </div>
+    </div>
     <canvas id="fx-canvas" aria-hidden="true"></canvas>
     <!-- Kho giao diện -->
     <div id="sk-modal" class="sk-modal" hidden>
@@ -1796,7 +1891,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
         const DEFAULT_PLACEHOLDER = userInput.placeholder;
         let recog = null;
         let voiceMode = false;
-        let autoSpeak = store.get('auto_speak') === '1';
+        let autoSpeak = false;
         let speakToken = 0;
         let isSpeaking = false;
         let silentCount = 0;
@@ -1905,6 +2000,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
                 if (i >= chunks.length) { updateSpeakUI(false); if (onDone) onDone(); return; }
                 const u = new SpeechSynthesisUtterance(chunks[i++]);
                 u.lang = lang;
+                if (window.VO) { VO.say(u.text); u.onboundary = () => VO.pulse(0.7); }
                 if (voice) u.voice = voice;
                 u.rate = 1;
                 u.onend = next;
@@ -1989,12 +2085,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
             };
             try { r.start(); } catch (e) { recog = null; showToast('Không thể bật micro: ' + e.message); }
         }
-        micBtn.addEventListener('click', () => {
-            if (voiceMode) { showToast('Đang ở chế độ trò chuyện. Bấm "Kết thúc trò chuyện" để dừng.', false); return; }
-            if (recog) { recog.stop(); return; }   // bấm lần nữa để dừng nói
-            stopSpeaking();
-            listen();
-        });
+        micBtn.addEventListener('click', () => { if (window.traceVoiceUI) window.traceVoiceUI.open('vi'); });
         function stopVoiceMode() {
             voiceMode = false;
             stopListening();
@@ -2360,7 +2451,7 @@ header.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent
         let enRecog = null;
         let enSilent = 0;
         let enFatal = '';
-        let enAuto = store.get('en_auto') !== '0';
+        let enAuto = false;
         let enTopic = null;
         const hasVietnamese = (t) => (t.match(VI_ONLY) || []).length >= 2;
         const setEnStatus = (t) => { enStatus.textContent = t || ''; };
@@ -2557,12 +2648,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             };
             try { r.start(); } catch (e) { enRecog = null; showToast('Không thể bật micro: ' + e.message); }
         }
-        enMic.addEventListener('click', () => {
-            if (enVoice) { showToast('Đang trong cuộc trò chuyện bằng giọng nói. Bấm "Kết thúc trò chuyện" để dừng.', false); return; }
-            if (enRecog) { enRecog.stop(); return; }
-            stopSpeaking();
-            enListen();
-        });
+        enMic.addEventListener('click', () => { if (window.traceVoiceUI) window.traceVoiceUI.open('en'); });
         function enStartVoice() {
             if (!SR) { showToast('Trình duyệt chưa hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome, Edge hoặc Safari.'); return; }
             if (!CONFIG.isConfigured) { showToast('Hãy cấu hình API trước khi trò chuyện bằng giọng nói.'); return; }
@@ -3578,7 +3664,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   accent.innerHTML = '<option value="en-US">🇺🇸 Giọng Mỹ</option><option value="en-GB">🇬🇧 Giọng Anh</option><option value="en-AU">🇦🇺 Giọng Úc</option><option value="en-IN">🇮🇳 Giọng Ấn</option><option value="en-SG">🇸🇬 Giọng Singapore</option>';
   accent.value = store.get('en_accent') || 'en-US'; if (!accent.value) accent.value = 'en-US';
   accent.addEventListener('change', () => store.set('en_accent', accent.value));
-  enVoiceBtn.insertAdjacentElement('afterend', accent);
+  (document.querySelector('.en-meta') || enVoiceBtn.parentNode).appendChild(accent);
   enListen = function () {
     if (!SR) { showToast('Trình duyệt chưa hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome, Edge hoặc Safari.'); return; }
     enStopListening();
@@ -3733,6 +3819,214 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     else if (a === 'full') full(el, !el.classList.contains('tm-full')); else if (a === 'png') png(el);
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { const el = document.querySelector('.tmx.tm-full'); if (el) full(el, false); } });
+})();
+</script>
+<script id="trace-voice-v12">
+/* ===== V12: ẩn/hiện lịch + giọng nói, bảng nói chuyện kiểu ChatGPT Voice ===== */
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+
+  // ---------- Nút ẩn/hiện Lịch & Giọng nói (cạnh nút sáng/tối) ----------
+  const sideBtn = $('side-btn');
+  function setSide(show, save) {
+    root.classList.toggle('side-off', !show);
+    sideBtn.classList.toggle('off', !show);
+    sideBtn.setAttribute('aria-pressed', String(show));
+    sideBtn.title = show ? 'Ẩn lịch & đồng hồ' : 'Hiện lịch & đồng hồ';
+    sideBtn.setAttribute('aria-label', sideBtn.title);
+    if (show && save) { root.classList.add('side-in'); setTimeout(() => root.classList.remove('side-in'), 450); }
+    if (save) store.set('ui_side', show ? '1' : '0');
+  }
+  function setVoiceUI() { root.classList.remove('voice-off'); }
+  sideBtn.addEventListener('click', () => setSide(root.classList.contains('side-off'), true));
+
+  // ---------- Bảng nói chuyện ----------
+  const vo = $('vo'), orb = $('vo-orb'), core = $('vo-core'), glow = $('vo-glow'), stEl = $('vo-status'),
+        cap = $('vo-cap'), chip = $('vo-chip'), muteB = $('vo-mute'), endB = $('vo-end'), hint = $('vo-hint');
+  const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+  const MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/></svg>';
+  const WAVE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="9" width="2.6" height="6" rx="1.3"/><rect x="7.4" y="5" width="2.6" height="14" rx="1.3"/><rect x="11.8" y="2.5" width="2.6" height="19" rx="1.3"/><rect x="16.2" y="6.5" width="2.6" height="11" rx="1.3"/><rect x="20.6" y="9.5" width="0" height="5" rx="1.3"/></svg>';
+  muteB.innerHTML = MIC;
+  const talkBtn = $('talk-btn'); if (talkBtn) talkBtn.innerHTML = WAVE;
+
+  const LABEL = { starting: 'Đang bật micro…', listening: 'Đang nghe…', thinking: 'Đang suy nghĩ…', speaking: 'Đang nói…', idle: 'Sẵn sàng', muted: 'Micro đang tắt' };
+  const HINT = {
+    starting: 'Nếu trình duyệt hỏi quyền micro, hãy bấm "Cho phép"',
+    listening: 'Nói xong thì chạm quả cầu để gửi ngay',
+    thinking: 'AI đang soạn câu trả lời…',
+    speaking: 'Chạm quả cầu để ngắt lời và nói tiếp',
+    idle: 'Bấm micro để nói tiếp',
+    muted: 'Bấm micro để nói tiếp'
+  };
+  const V = { open: false, kind: '', muted: false, phase: 'starting', amp: 0, tgt: 0, raf: 0, seen: '', lastUser: '', capKey: '', opener: null, prevOverflow: '', draft: '' };
+  const display = () => (V.muted && V.phase !== 'thinking' && V.phase !== 'speaking') ? 'muted' : V.phase;
+
+  function setCap(role, text) {
+    text = (text || '').trim();
+    if (role === 'user' && text.length > 180) text = '…' + text.slice(-180);
+    if (role === 'user' && V.phase === 'thinking' && text) text = '“' + text + '”';
+    const key = role + '|' + text;
+    if (key === V.capKey) return;
+    V.capKey = key; cap.className = 'vo-cap ' + role; cap.textContent = text;
+  }
+  function render() {
+    const d = display();
+    vo.dataset.state = d;
+    stEl.textContent = LABEL[d] || '';
+    hint.textContent = HINT[d] || '';
+    if (d === 'thinking') setCap('user', V.lastUser);
+    else if (d === 'listening' || d === 'starting') setCap('user', V.seen);
+    else if (d === 'muted' || d === 'idle') setCap('user', '');
+  }
+  function setPhase(p) { if (V.phase === p) return; V.phase = p; if (V.open) render(); }
+
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function frame(t) {
+    if (!V.open) return;
+    V.raf = requestAnimationFrame(frame);
+    const s = t / 1000, d = display(), inp = V.kind === 'en' ? enInput : userInput;
+    if (d === 'listening') {
+      const v = inp.value;
+      if (v !== V.seen) { V.seen = v; V.tgt = 0.55 + Math.random() * 0.4; if (v.trim()) V.lastUser = v.trim(); setCap('user', v); }
+    }
+    let base;
+    switch (d) {
+      case 'listening': base = 0.05 + 0.03 * Math.sin(s * 2.2); break;
+      case 'thinking': base = 0.09 + 0.05 * Math.sin(s * 3); break;
+      case 'speaking': base = 0.16 + 0.14 * Math.abs(Math.sin(s * 6.3) * Math.sin(s * 2.7 + 1)); break;
+      case 'muted': case 'idle': base = 0.02; break;
+      default: base = 0.05 + 0.04 * Math.sin(s * 2);
+    }
+    if (reduce) base *= 0.3;
+    V.tgt *= 0.88;
+    V.amp += (Math.max(base, reduce ? 0 : V.tgt) - V.amp) * 0.22;
+    core.style.transform = 'scale(' + (1 + V.amp * 0.32).toFixed(3) + ')';
+    glow.style.opacity = (0.38 + V.amp * 1.3).toFixed(3);
+  }
+  function pulse(v) { V.tgt = Math.max(V.tgt, v || 0.6); }
+  function show(kind) {
+    V.kind = kind; V.muted = false; V.phase = 'starting'; V.seen = ''; V.lastUser = ''; V.capKey = ''; V.amp = 0; V.tgt = 0;
+    muteB.classList.remove('off'); muteB.innerHTML = MIC; muteB.setAttribute('aria-pressed', 'false'); muteB.title = 'Tắt micro';
+    if (kind === 'en') { const a = $('en-accent'); chip.textContent = '🎙️ English · ' + (a && a.selectedOptions[0] ? a.selectedOptions[0].textContent : 'Giọng Mỹ'); }
+    else chip.textContent = '🎙️ Tiếng Việt';
+    const inp0 = kind === 'en' ? enInput : userInput;
+    if (!V.open) {
+      V.draft = inp0.value; inp0.value = '';
+      V.open = true; V.opener = document.activeElement; V.prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      vo.hidden = false; void vo.offsetWidth; vo.classList.add('on');
+      V.raf = requestAnimationFrame(frame);
+    }
+    setCap('user', ''); render();
+    setTimeout(() => { try { orb.focus({ preventScroll: true }); } catch (e) {} }, 60);
+  }
+  function hide() {
+    if (!V.open) return;
+    V.open = false; cancelAnimationFrame(V.raf); vo.classList.remove('on');
+    const inp1 = V.kind === 'en' ? enInput : userInput;
+    if (V.draft && !inp1.value) inp1.value = V.draft;
+    V.draft = '';
+    document.body.style.overflow = V.prevOverflow;
+    setTimeout(() => { if (!V.open) vo.hidden = true; }, 260);
+    try { if (V.opener && V.opener.focus) V.opener.focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  // ---------- Nối vào luồng nói chuyện có sẵn ----------
+  const stopMic = () => { if (V.kind === 'en') enStopListening(); else stopListening(); };
+  const clearStatus = () => { if (V.kind === 'en') setEnStatus(''); else setVoiceStatus(''); };
+  const startMic = () => { if (V.kind === 'en') enListen(); else listen(); };
+
+  function openVoice(kind) {
+    if (root.classList.contains('voice-off')) setVoiceUI(true, true);
+    if (V.open) return;
+    if (kind === 'en') {
+      enStartVoice();                      // tự kiểm tra trình duyệt + cấu hình API, rồi mở bảng (xem bản bọc bên dưới)
+    } else {
+      if (!SR) { showToast('Trình duyệt chưa hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome, Edge hoặc Safari.'); return; }
+      if (!CONFIG.isConfigured) { showToast('Hãy cấu hình API trước khi trò chuyện bằng giọng nói.'); return; }
+      if (sending) return;
+      stopSpeaking(); if (recog) stopListening();
+      voiceMode = true; silentCount = 0;
+      show('vi');
+      listen();
+    }
+  }
+  function endVoice() {
+    const k = V.kind;
+    hide();
+    if (k === 'en') { if (enVoice) enStopVoice(); } else if (voiceMode) stopVoiceMode();
+  }
+  function setMuted(m) {
+    V.muted = m;
+    muteB.classList.toggle('off', m); muteB.innerHTML = m ? MIC_OFF : MIC;
+    muteB.setAttribute('aria-pressed', String(m)); muteB.title = m ? 'Bật micro' : 'Tắt micro';
+    if (m) { if (V.phase === 'listening' || V.phase === 'starting') { stopMic(); clearStatus(); V.phase = 'idle'; } }
+    else if (V.phase === 'idle' || V.phase === 'starting') { V.phase = 'starting'; startMic(); }
+    render();
+  }
+  muteB.addEventListener('click', () => setMuted(!V.muted));
+  endB.addEventListener('click', endVoice);
+  orb.addEventListener('click', () => {
+    const d = display();
+    if (d === 'listening') {
+      const r = V.kind === 'en' ? enRecog : recog;
+      if (r && r.stop) { try { r.stop(); } catch (e) {} }          // gửi ngay phần vừa nói
+    } else if (d === 'speaking') {
+      (V.kind === 'en' ? enStopBtn : stopSpeakBtn).click();          // ngắt lời → chuyển sang nghe
+    }
+  });
+  document.addEventListener('keydown', e => { if (V.open && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); endVoice(); } }, true);
+
+  // Mở bảng từ các nút
+  if (talkBtn) talkBtn.addEventListener('click', () => openVoice('vi'));
+  window.enStartVoice = (function (orig) {
+    return function () {
+      const pre = !V.open && SR && CONFIG.isConfigured && !enVoice;
+      if (pre) show('en');                 // mở bảng trước để thấy ngay câu chào đầu tiên
+      const r = orig.apply(this, arguments);
+      if (pre && !enVoice) hide();
+      return r;
+    };
+  })(enStartVoice);
+  window.stopVoiceMode = (function (orig) { return function () { const r = orig.apply(this, arguments); if (V.open && V.kind === 'vi') hide(); return r; }; })(stopVoiceMode);
+  window.enStopVoice = (function (orig) { return function () { const r = orig.apply(this, arguments); if (V.open && V.kind === 'en') hide(); return r; }; })(enStopVoice);
+  // Khi đang tắt micro thì không tự bật nghe lại sau khi AI nói xong
+  window.listen = (function (orig) {
+    return function () {
+      if (V.open && V.kind === 'vi' && V.muted) { setVoiceStatus(''); V.phase = 'idle'; render(); return; }
+      return orig.apply(this, arguments);
+    };
+  })(listen);
+  window.enListen = (function (orig) {
+    return function () {
+      if (V.open && V.kind === 'en' && V.muted) { setEnStatus(''); V.phase = 'idle'; render(); return; }
+      return orig.apply(this, arguments);
+    };
+  })(enListen);
+
+  // Trạng thái lấy từ chính dòng trạng thái của app
+  function fromStatus(t) { return /nghe/i.test(t) ? 'listening' : /suy nghĩ/i.test(t) ? 'thinking' : /trả lời/i.test(t) ? 'speaking' : null; }
+  [['voice-status', 'vi'], ['en-status', 'en']].forEach(([id, kind]) => {
+    new MutationObserver(() => {
+      if (!V.open || V.kind !== kind) return;
+      const p = fromStatus($(id).textContent);
+      if (p) { if (p === 'listening') V.seen = ''; setPhase(p); }
+    }).observe($(id), { childList: true, characterData: true, subtree: true });
+  });
+  // speak() báo từng câu đang đọc + nhịp để quả cầu đập theo giọng
+  window.VO = {
+    say(text) { if (!V.open) return; V.phase = 'speaking'; render(); setCap('ai', text); },
+    pulse
+  };
+  window.addEventListener('pagehide', () => { if (V.open) endVoice(); });
+
+  // ---------- Khôi phục lựa chọn ẩn/hiện đã lưu ----------
+  setSide(store.get('ui_side') !== '0', false);
+  setVoiceUI();
+  (function () { const m = document.querySelector('.en-meta'), r = $('en-reset'); if (m && r) m.appendChild(r); })();
+  window.traceVoiceUI = { open: openVoice, end: endVoice, state: () => ({ open: V.open, phase: V.phase, muted: V.muted, kind: V.kind }) };
 })();
 </script>
 </body>
