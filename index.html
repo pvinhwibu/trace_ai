@@ -778,6 +778,38 @@ html.voice-off #en-voice-btn,html.voice-off #en-auto-btn,html.voice-off #en-stop
 #mic-btn:hover,#en-mic:hover{transform:translateY(-1px) scale(1.05)}
 .en-meta #en-reset,.en-meta #en-accent{flex:0 0 auto}
 </style>
+<style id="trace-v14">
+*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.glass{background:color-mix(in srgb,var(--sk-surface,#fff) 95%,transparent)!important}
+.sk-overlay{background:rgba(0,0,0,.55)!important}
+.tmx-svg{text-rendering:optimizeSpeed}
+.tmx-view{overscroll-behavior:contain;will-change:contents}
+header.glass{transform:translateZ(0)}
+html,body{overscroll-behavior-y:none}
+</style>
+<style id="trace-v15-css">
+.pomo{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding:8px 10px 11px;border-radius:14px;background:var(--tc-hover);color:var(--tc-text);overflow:hidden}
+.pomo-ic{font-size:1rem;line-height:1}
+.pomo-time{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:3.5rem}
+.pomo-label{font-size:.75rem;font-weight:700;color:var(--tc-muted)}
+.pomo-btn{width:30px;height:30px;border-radius:50%;border:2px solid var(--tc-border);background:var(--sk-surface,#fff);color:var(--tc-text);display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;line-height:1;padding:0;cursor:pointer}
+.pomo-btn:hover{border-color:var(--sk-accent,#2563EB)}
+.pomo-btn.main{background:var(--sk-grad,linear-gradient(135deg,#2563EB,#7C3AED));border-color:transparent;color:var(--sk-on,#fff)}
+.pomo-btn[hidden]{display:none}
+.pomo-today{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--tc-muted)}
+.pomo-bar{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--sk-grad,linear-gradient(135deg,#2563EB,#7C3AED));transition:width .5s linear}
+.pomo[data-mode="break"] .pomo-bar{background:#10B981}
+.pomo.running .pomo-ic{animation:pomoBeat 1.6s ease-in-out infinite}
+@keyframes pomoBeat{50%{transform:scale(1.18)}}
+.cal-cell.st::before{content:'';position:absolute;left:28%;right:28%;bottom:3px;height:3px;border-radius:2px;background:#10B981;opacity:calc(.45 + var(--st,0)*.55)}
+.pomo-day{margin-top:8px;padding-top:8px;border-top:1px dashed var(--tc-border);font-weight:600}
+.pomo-day.none{color:var(--tc-muted);font-weight:500}
+.pomo-list{margin-top:2px;font-size:.78rem;font-weight:500;color:var(--tc-muted)}
+.mm-img-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding:6px 2px;cursor:pointer;color:var(--tc-muted);font-weight:600;font-size:.95rem;width:fit-content}
+.mm-img-row[hidden]{display:none}
+.mm-img-row input{width:18px;height:18px;accent-color:var(--sk-accent,#2563EB);cursor:pointer;flex:none}
+@media(prefers-reduced-motion:reduce){.pomo.running .pomo-ic{animation:none}.pomo-bar{transition:none}}
+</style>
 </head>
 <body class="font-sans text-neutral-800 min-h-screen flex flex-col scroll-smooth">
     <!-- Header -->
@@ -1025,6 +1057,7 @@ html.voice-off #en-voice-btn,html.voice-off #en-auto-btn,html.voice-off #en-stop
                 <div class="p-4 border-t border-neutral-100 bg-white">
                     <!-- Xem trước ảnh đính kèm -->
                     <div id="image-preview" class="gap-2 flex-wrap mb-3" style="display:none"></div>
+                    <label id="mm-img-row" class="mm-img-row" hidden><input type="checkbox" id="mm-img-toggle" checked><span>Kèm hình ảnh minh họa</span></label>
                     <div class="voice-bar" id="voice-bar" style="display:none" aria-hidden="true">
                         <button type="button" id="autospeak-btn" class="vbtn"><i class="fa fa-volume-up"></i> <span>Tự đọc câu trả lời: Tắt</span></button>
                         <button type="button" id="stop-speak-btn" class="vbtn" style="display:none"><i class="fa fa-stop"></i> <span>Dừng đọc</span></button>
@@ -1103,6 +1136,15 @@ html.voice-off #en-voice-btn,html.voice-off #en-auto-btn,html.voice-off #en-stop
                         <div id="tc-lunar" class="tc-lunar"></div>
                     </div>
                     <button type="button" id="tc-toggle" class="vbtn"><i class="fa fa-calendar"></i> <span>Lịch &amp; ngày lễ</span> <i class="fa fa-chevron-down" id="tc-chev"></i></button>
+                </div>
+                <div id="pomo" class="pomo" data-mode="focus">
+                    <span class="pomo-ic" aria-hidden="true">🍅</span>
+                    <span id="pomo-time" class="pomo-time">25:00</span>
+                    <span id="pomo-label" class="pomo-label">Phiên 25 phút</span>
+                    <button type="button" id="pomo-go" class="pomo-btn main" title="Bắt đầu">▶</button>
+                    <button type="button" id="pomo-stop" class="pomo-btn" title="Kết thúc và lưu lên lịch" hidden>⏹</button>
+                    <span id="pomo-today" class="pomo-today"></span>
+                    <span id="pomo-bar" class="pomo-bar"></span>
                 </div>
                 <div id="tc-body" class="tc-body" style="display:none">
                     <div class="tc-grid">
@@ -3695,15 +3737,64 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     if (cur) out.push(cur);
     return out.slice(0, 4).map(l => l.length > 36 ? l.slice(0, 35) + '…' : l);
   }
+  const MI = { on: store.get('mm_img') !== '0', cache: new Map() };
+  const WIKI_API = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=240&pilimit=10';
+  const COMMONS_API = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime&iiurlwidth=240';
+  const enc = encodeURIComponent;
+  const isPhoto = u => !!u && !/\.svg(\.png)?(\?|$)/i.test(u);
+  const pagesOf = j => Object.values(j && j.query && j.query.pages || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
+  const keyWords = s => s.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2);
+  const sameTopic = (title, words) => { const t = title.toLowerCase(); return words.some(w => t.includes(w)); };
+  async function getJson(url, signal) {
+    const r = await fetch(url, { signal });
+    if (!r.ok) throw new Error('http');
+    return r.json();
+  }
+  async function findPicUrl(kw, signal) {
+    const words = keyWords(kw);
+    const sentence = kw.charAt(0).toUpperCase() + kw.slice(1).toLowerCase();
+    const exact = pagesOf(await getJson(WIKI_API + '&redirects=1&titles=' + enc(kw + '|' + sentence), signal))
+      .find(p => isPhoto(p.thumbnail && p.thumbnail.source));
+    if (exact) return exact.thumbnail.source;
+    const files = pagesOf(await getJson(COMMONS_API + '&gsrsearch=' + enc(kw + ' filetype:bitmap'), signal))
+      .find(p => p.imageinfo && p.imageinfo[0] && /^image\/(jpeg|png)$/.test(p.imageinfo[0].mime) && sameTopic(p.title, words));
+    if (files) return files.imageinfo[0].thumburl;
+    const found = pagesOf(await getJson(WIKI_API + '&generator=search&gsrnamespace=0&gsrlimit=8&gsrsearch=' + enc(kw), signal))
+      .find(p => isPhoto(p.thumbnail && p.thumbnail.source) && sameTopic(p.title, words));
+    return found ? found.thumbnail.source : null;
+  }
+  function fetchPic(kw) {
+    const key = kw.toLowerCase();
+    if (MI.cache.has(key)) return MI.cache.get(key);
+    const p = (async () => {
+      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 12000);
+      try {
+        const u = await findPicUrl(kw, ac.signal);
+        if (!u) return null;
+        const bl = await (await fetch(u, { signal: ac.signal })).blob();
+        if (!/^image\//.test(bl.type)) return null;
+        return await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(bl); });
+      } finally { clearTimeout(tm); }
+    })().catch(() => null);
+    MI.cache.set(key, p);
+    return p;
+  }
   function model(src) {
     const r = traceParseMindmap(src); if (!r) return null; let id = 0;
     const mk = (n, d, ci) => {
-      const m = n.text.match(emRe), label = ((d <= 1 && m) ? n.text.slice(m[0].length) : n.text).trim() || '…';
-      const o = { id: id++, d, ci, label, emo: d <= 1 ? (m ? m[1] : traceMapEmoji(label)) : '', col: false };
+      let text = n.text, kw = '';
+      const wrapped = /^\s*root\s*[\(\[\{]/i.test(text) || /^\s*[\(\[\{]{2,}/.test(text);
+      if (wrapped) text = text.replace(/^\s*root\s*/i, '').replace(/^[\(\[\{]+\s*/, '');
+      const km = text.match(/\s~\s*([^~]+)$/);
+      if (km) { kw = km[1].replace(/[\)\]\}]+\s*$/, '').trim(); text = text.slice(0, km.index); }
+      if (wrapped) text = text.replace(/\s*[\)\]\}]+\s*$/, '');
+      const m = text.match(emRe), label = ((d <= 1 && m) ? text.slice(m[0].length) : text).trim() || '…';
+      const o = { id: id++, d, ci, label, kw, emo: d <= 1 ? (m ? m[1] : traceMapEmoji(label)) : '', col: false, im: MI.on && d <= 1, pic: null, is: d === 0 ? 60 : 44 };
+      o.tile = o.im ? traceMapIllustration(label, d === 0 ? 5 : ci) : '';
       const font = d === 0 ? FONT(15, 700) : FONT(13, d === 1 ? 700 : 600);
       o.font = font; o.lines = wrap(label, d === 0 ? 170 : d === 1 ? 160 : 190, font); mc.font = font;
-      o.w = Math.ceil(Math.max(...o.lines.map(l => mc.measureText(l).width))) + (d <= 1 ? 66 : 30);
-      o.h = Math.max(d <= 1 ? 46 : 34, o.lines.length * (d === 0 ? 20 : 17) + 16);
+      o.w = Math.ceil(Math.max(...o.lines.map(l => mc.measureText(l).width))) + (o.im ? o.is + 34 : d <= 1 ? 66 : 30);
+      o.h = Math.max(o.im ? o.is + 16 : d <= 1 ? 46 : 34, o.lines.length * (d === 0 ? 20 : 17) + 16);
       o.ch = (n.children || []).slice(0, d === 0 ? 10 : 12).map((c, i) => mk(c, d + 1, d === 0 ? i : ci)); return o;
     };
     return mk(r, 0, 0);
@@ -3741,7 +3832,11 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
       const top = n.y - n.h / 2, k = col(n), solid = n.d <= 1, fg = solid ? '#fff' : C.text;
       m += `<g class="tmx-n" data-id="${n.id}"><rect x="${n.x}" y="${top}" width="${n.w}" height="${n.h}" rx="${n.d === 0 ? 22 : 13}" fill="${n.d === 0 ? `url(#tg${uid})` : solid ? k : C.surface}" stroke="${k}" stroke-width="2"/>`;
       let tx = n.x + 15;
-      if (n.d <= 1) { m += `<circle cx="${n.x + 27}" cy="${n.y}" r="16" fill="rgba(255,255,255,.28)"/><text x="${n.x + 27}" y="${n.y + 6}" font-size="17" text-anchor="middle">${n.emo}</text>`; tx = n.x + 52; }
+      if (n.im) {
+        const ix = n.x + 10, iy = n.y - n.is / 2, rr = n.d === 0 ? 16 : 12, cid = `cp${uid}_${n.id}`;
+        m += `<clipPath id="${cid}"><rect x="${ix}" y="${iy}" width="${n.is}" height="${n.is}" rx="${rr}"/></clipPath><rect x="${ix}" y="${iy}" width="${n.is}" height="${n.is}" rx="${rr}" fill="rgba(255,255,255,.35)"/><image href="${n.pic || n.tile}" x="${ix}" y="${iy}" width="${n.is}" height="${n.is}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/><rect x="${ix}" y="${iy}" width="${n.is}" height="${n.is}" rx="${rr}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"/>`;
+        tx = n.x + n.is + 20;
+      } else if (n.d <= 1) { m += `<circle cx="${n.x + 27}" cy="${n.y}" r="16" fill="rgba(255,255,255,.28)"/><text x="${n.x + 27}" y="${n.y + 6}" font-size="17" text-anchor="middle">${n.emo}</text>`; tx = n.x + 52; }
       const lh = n.d === 0 ? 20 : 17, y0 = n.y - n.lines.length * lh / 2;
       m += `<text font-family="system-ui,sans-serif" font-size="${n.d === 0 ? 15 : 13}" font-weight="${n.d <= 1 ? 700 : 600}" fill="${fg}">${n.lines.map((l, i) => `<tspan x="${tx}" y="${y0 + lh * (i + .78)}">${x(l)}</tspan>`).join('')}</text>`;
       if (n.d > 0 && n.ch.length) { const cx = n.dir > 0 ? n.x + n.w : n.x; m += `<circle cx="${cx}" cy="${n.y}" r="9" fill="${C.surface}" stroke="${k}" stroke-width="2"/><text x="${cx}" y="${n.y + 4.5}" font-size="13" font-weight="800" text-anchor="middle" fill="${k}">${n.col ? '+' : '−'}</text>`; }
@@ -3754,9 +3849,20 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     const src = el.querySelector('.trace-map-source')?.value || ''; const root = model(src); const view = el.querySelector('.tmx-view');
     const st = el._tmx = { root, vb: null, moved: false, uid: ++uidc, user: false };
     if (!root) { view.textContent = 'Chưa có dữ liệu sơ đồ.'; return; }
-    const byId = {}; (function f(n) { byId[n.id] = n; n.ch.forEach(f); })(root);
+    let byId = {};
+    const index = () => { byId = {}; (function f(n) { byId[n.id] = n; n.ch.forEach(f); })(st.root); };
+    index();
+    function loadPics() {
+      st.pending = [];
+      (function walk(n) {
+        if (n.im && n.kw) st.pending.push(fetchPic(n.kw).then(u => { if (u) { n.pic = u; queue(); } }));
+        n.ch.forEach(walk);
+      })(st.root);
+    }
+    function queue() { clearTimeout(st.rt); st.rt = setTimeout(() => render(true), 120); }
+    function rebuild() { const r = model(src); if (!r) return; st.root = r; index(); loadPics(); render(false); }
     function render(keep) {
-      layout(root); const d = draw(root, null, st.uid); st.b = d.b;
+      layout(st.root); const d = draw(st.root, null, st.uid); st.b = d.b;
       if (!st.vb || !keep) fit(false);
       view.innerHTML = `<svg class="tmx-svg" xmlns="http://www.w3.org/2000/svg" viewBox="${st.vb.join(' ')}" preserveAspectRatio="xMidYMid meet">${d.m}</svg>`;
     }
@@ -3766,24 +3872,38 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
       if (w / h < a) w = h * a; else h = w / a;
       st.vb = [(b.x1 + b.x2) / 2 - w / 2, (b.y1 + b.y2) / 2 - h / 2, w, h]; st.user = false; if (apply) setVB();
     }
-    const setVB = () => view.querySelector('svg')?.setAttribute('viewBox', st.vb.map(v => +v.toFixed(2)).join(' '));
-    function zoom(f, px, py) {
-      const [vx, vy, vw, vh] = st.vb, nw = Math.min(8000, Math.max(120, vw / f)), k = nw / vw;
-      const cx = px ?? vx + vw / 2, cy = py ?? vy + vh / 2;
-      st.vb = [cx - (cx - vx) * k, cy - (cy - vy) * k, nw, vh * k]; st.user = true; setVB();
+    let pend = 0;
+    const setVB = () => { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; view.querySelector('svg')?.setAttribute('viewBox', st.vb.map(v => +v.toFixed(2)).join(' ')); }); };
+    const stopAnim = () => { cancelAnimationFrame(st.anim); st.anim = 0; };
+    function tween(to) {
+      stopAnim(); const from = st.vb.slice(), t0 = performance.now();
+      const step = t => { const k = Math.min(1, (t - t0) / 200), e = 1 - Math.pow(1 - k, 3); st.vb = from.map((v, i) => v + (to[i] - v) * e); setVB(); if (k < 1) st.anim = requestAnimationFrame(step); };
+      st.anim = requestAnimationFrame(step);
     }
-    el._tmxApi = { fit, zoom, render };
+    function glide(vx, vy) {
+      stopAnim(); let last = performance.now();
+      const step = t => { const dt = Math.min(40, t - last); last = t; st.vb[0] += vx * dt; st.vb[1] += vy * dt; const f = Math.pow(0.94, dt / 16); vx *= f; vy *= f; setVB(); if (Math.hypot(vx, vy) > 0.004) st.anim = requestAnimationFrame(step); else st.anim = 0; };
+      st.anim = requestAnimationFrame(step);
+    }
+    function zoom(f, px, py, smooth) {
+      const [vx, vy, vw, vh] = st.vb, nw = Math.min(8000, Math.max(120, vw / f)), k = nw / vw;
+      const cx = px ?? vx + vw / 2, cy = py ?? vy + vh / 2, to = [cx - (cx - vx) * k, cy - (cy - vy) * k, nw, vh * k];
+      st.user = true; if (smooth) tween(to); else { stopAnim(); st.vb = to; setVB(); }
+    }
+    el._tmxApi = { fit, zoom, render, rebuild };
     const pts = new Map(); let d0 = 0, sx = 0, sy = 0;
     const toSvg = (cx, cy) => { const r = view.getBoundingClientRect(), v = st.vb; return [v[0] + (cx - r.left) / r.width * v[2], v[1] + (cy - r.top) / r.height * v[3]]; };
-    view.addEventListener('pointerdown', e => { pts.set(e.pointerId, [e.clientX, e.clientY]); st.moved = false; sx = e.clientX; sy = e.clientY; if (pts.size === 2) { const [a, c] = [...pts.values()]; d0 = Math.hypot(a[0] - c[0], a[1] - c[1]); } });
+    view.addEventListener('pointerdown', e => { pts.set(e.pointerId, [e.clientX, e.clientY]); st.moved = false; sx = e.clientX; sy = e.clientY; stopAnim(); st.vel = [0, 0]; st.lt = e.timeStamp; if (pts.size === 2) { const [a, c] = [...pts.values()]; d0 = Math.hypot(a[0] - c[0], a[1] - c[1]); } });
     view.addEventListener('pointermove', e => {
       if (!pts.has(e.pointerId)) return; const prev = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
       if (pts.size === 2) { const [a, c] = [...pts.values()], d = Math.hypot(a[0] - c[0], a[1] - c[1]); if (d0) { const [mx, my] = toSvg((a[0] + c[0]) / 2, (a[1] + c[1]) / 2); zoom(d / d0, mx, my); } d0 = d; st.moved = true; return; }
       if (Math.hypot(e.clientX - sx, e.clientY - sy) > 5) { if (!st.moved) { try { view.setPointerCapture(e.pointerId); } catch (_) {} } st.moved = true; }
       if (!st.moved) return; const r = view.getBoundingClientRect(), v = st.vb;
-      st.vb = [v[0] - (e.clientX - prev[0]) * v[2] / r.width, v[1] - (e.clientY - prev[1]) * v[3] / r.height, v[2], v[3]]; st.user = true; setVB();
+      const ddx = (e.clientX - prev[0]) * v[2] / r.width, ddy = (e.clientY - prev[1]) * v[3] / r.height, dt = Math.max(1, e.timeStamp - st.lt); st.lt = e.timeStamp;
+      st.vel = [st.vel[0] * 0.6 - ddx / dt * 0.4, st.vel[1] * 0.6 - ddy / dt * 0.4];
+      st.vb = [v[0] - ddx, v[1] - ddy, v[2], v[3]]; st.user = true; setVB();
     });
-    const up = e => { pts.delete(e.pointerId); d0 = 0; };
+    const up = e => { pts.delete(e.pointerId); d0 = 0; if (!pts.size && st.moved && st.vel && Math.hypot(st.vel[0], st.vel[1]) > 0.02 && e.timeStamp - st.lt < 80) glide(st.vel[0], st.vel[1]); };
     view.addEventListener('pointerup', up); view.addEventListener('pointercancel', up);
     view.addEventListener('wheel', e => { if (!(e.ctrlKey || e.metaKey) && !el.classList.contains('tm-full')) return; e.preventDefault(); const [mx, my] = toSvg(e.clientX, e.clientY); zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, mx, my); }, { passive: false });
     view.addEventListener('click', e => {
@@ -3791,6 +3911,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
       const n = byId[g.dataset.id]; if (n && n.d > 0 && n.ch.length) { n.col = !n.col; render(true); }
     });
     new ResizeObserver(() => { if (!st.user && view.clientWidth) { fit(false); render(true); } }).observe(view);
+    loadPics();
     render(false);
   }
   function scan() { document.querySelectorAll('.tmx').forEach(el => { if (!el._tmx) init(el); }); }
@@ -3804,8 +3925,10 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     else if (holder) { holder.replaceWith(el); holder = null; el.classList.remove('tm-full'); document.body.style.overflow = ''; }
     el._tmx.user = false; requestAnimationFrame(() => { el._tmxApi.fit(false); el._tmxApi.render(true); });
   }
-  function png(el) {
-    const st = el._tmx, cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  async function png(el) {
+    const st = el._tmx;
+    if (st.pending && st.pending.length) await Promise.race([Promise.allSettled(st.pending), new Promise(r => setTimeout(r, 2500))]);
+    const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
     const d = draw(st.root, { surface: v('--sk-surface') || '#fff', text: v('--sk-text') || '#1e293b', accent: v('--sk-accent') || '#2563eb', accent2: v('--sk-accent2') || '#7c3aed' }, 'x');
     const w = d.b.x2 - d.b.x1 + 60, h = d.b.y2 - d.b.y1 + 60, sc = 2;
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w * sc}" height="${h * sc}" viewBox="${d.b.x1 - 30} ${d.b.y1 - 30} ${w} ${h}"><rect x="${d.b.x1 - 30}" y="${d.b.y1 - 30}" width="${w}" height="${h}" fill="${v('--sk-surface2') || '#f1f5f9'}"/>${d.m}</svg>`;
@@ -3815,10 +3938,25 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-tmx]'); if (!b) return; const el = b.closest('.tmx'); if (!el || !el._tmx) return; const a = b.dataset.tmx, api = el._tmxApi;
-    if (a === 'in') api.zoom(1.25); else if (a === 'out') api.zoom(1 / 1.25); else if (a === 'fit') { api.fit(false); api.render(true); }
+    if (a === 'in') api.zoom(1.3, undefined, undefined, true); else if (a === 'out') api.zoom(1 / 1.3, undefined, undefined, true); else if (a === 'fit') { api.fit(false); api.render(true); }
     else if (a === 'full') full(el, !el.classList.contains('tm-full')); else if (a === 'png') png(el);
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { const el = document.querySelector('.tmx.tm-full'); if (el) full(el, false); } });
+  const mmRow = document.getElementById('mm-img-row'), mmBox = document.getElementById('mm-img-toggle');
+  mmBox.checked = MI.on;
+  const syncRow = () => { mmRow.hidden = traceMode !== 'mindmap'; };
+  mmBox.addEventListener('change', () => {
+    MI.on = mmBox.checked;
+    store.set('mm_img', MI.on ? '1' : '0');
+    document.querySelectorAll('.tmx').forEach(el => { if (el._tmxApi) el._tmxApi.rebuild(); });
+  });
+  new MutationObserver(syncRow).observe(document.getElementById('trace-mode-label'), { childList: true });
+  syncRow();
+  const mmMeta = TRACE_MODE_META.mindmap, mmBase = mmMeta.instruction;
+  Object.defineProperty(mmMeta, 'instruction', {
+    configurable: true, enumerable: true,
+    get: () => MI.on ? mmBase + ' Với dòng chủ đề trung tâm và mỗi nhánh chính, thêm sau cụm từ ký hiệu " ~ " rồi tên bài Wikipedia tiếng Anh CHÍNH XÁC của một vật thể, thiết bị, địa danh hoặc hiện tượng cụ thể có thể chụp ảnh được và đại diện đúng cho nhánh đó (ví dụ: "- 🔨 Dụng cụ cầm tay ~ Hammer", "- 💧 Bốc hơi ~ Evaporation", "- 🦺 An toàn lao động ~ Hard hat"). Tránh từ trừu tượng như safety, properties, knowledge. Dòng chủ đề trung tâm viết thẳng tên chủ đề, không viết chữ "root" và không dùng ngoặc bao quanh. Các ý con không cần từ khóa.' : mmBase
+  });
 })();
 </script>
 <script id="trace-voice-v12">
@@ -4027,6 +4165,155 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   setVoiceUI();
   (function () { const m = document.querySelector('.en-meta'), r = $('en-reset'); if (m && r) m.appendChild(r); })();
   window.traceVoiceUI = { open: openVoice, end: endVoice, state: () => ({ open: V.open, phase: V.phase, muted: V.muted, kind: V.kind }) };
+})();
+</script>
+<script id="trace-pomodoro">
+(function () {
+  const $ = id => document.getElementById(id);
+  const box = $('pomo');
+  if (!box) return;
+  const FOCUS = 1500, BREAK = 300, KEY = 'pomo_log';
+  const el = { time: $('pomo-time'), label: $('pomo-label'), go: $('pomo-go'), stop: $('pomo-stop'), today: $('pomo-today'), bar: $('pomo-bar') };
+  const baseTitle = document.title;
+  const p2 = n => String(n).padStart(2, '0');
+  const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  const mins = sec => Math.max(1, Math.round(sec / 60));
+  const S = { mode: 'focus', run: false, t0: 0, acc: 0, iv: 0, start: 0 };
+  let log = [];
+  try {
+    const a = JSON.parse(store.get(KEY) || '[]');
+    if (Array.isArray(a)) log = a.filter(x => x && typeof x.s === 'number' && typeof x.sec === 'number');
+  } catch (e) {}
+  const save = () => store.set(KEY, JSON.stringify(log.slice(-400)));
+  const total = () => (S.mode === 'focus' ? FOCUS : BREAK);
+  const used = () => S.acc + (S.run ? Date.now() - S.t0 : 0);
+  const left = () => Math.max(0, Math.ceil((total() * 1000 - used()) / 1000));
+
+  function stats() {
+    const map = {};
+    log.forEach(e => {
+      const k = dayKey(e.s);
+      const o = map[k] || (map[k] = { sec: 0, n: 0, items: [] });
+      o.sec += e.sec; o.n++; o.items.push(e);
+    });
+    return map;
+  }
+
+  function beep() {
+    try {
+      const C = window.AudioContext || window.webkitAudioContext;
+      const ctx = new C();
+      [0, 0.28, 0.56].forEach(t => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.22);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.25);
+      });
+      setTimeout(() => ctx.close(), 1200);
+    } catch (e) {}
+  }
+
+  function decorate() {
+    const map = stats();
+    document.querySelectorAll('#cal-grid .cal-cell').forEach(b => {
+      const s = map[b.dataset.y + '-' + b.dataset.m + '-' + b.dataset.d];
+      if (!s) return;
+      b.classList.add('st');
+      b.style.setProperty('--st', Math.min(1, s.sec / 5400).toFixed(2));
+      b.title = (b.title ? b.title + ' • ' : '') + 'Đã học ' + mins(s.sec) + ' phút';
+    });
+    if (typeof calSel === 'undefined' || !calSel) return;
+    const s = map[calSel.y + '-' + calSel.m + '-' + calSel.d];
+    if (!s) { $('cal-detail').insertAdjacentHTML('beforeend', '<div class="pomo-day none">🍅 Chưa có phiên học nào</div>'); return; }
+    const rows = s.items.slice(-6).map(e => {
+      const d = new Date(e.s);
+      return p2(d.getHours()) + ':' + p2(d.getMinutes()) + ' · ' + mins(e.sec) + ' phút' + (e.done ? '' : ' (dừng sớm)');
+    }).join('<br>');
+    $('cal-detail').insertAdjacentHTML('beforeend', '<div class="pomo-day">🍅 Đã học ' + s.n + ' phiên • ' + mins(s.sec) + ' phút<div class="pomo-list">' + rows + '</div></div>');
+  }
+
+  const origRender = window.renderCalendar;
+  window.renderCalendar = function () { origRender.apply(this, arguments); decorate(); };
+
+  function refreshCalendar() { if (typeof calView !== 'undefined' && calView) window.renderCalendar(); }
+
+  function addLog(start, sec, done) {
+    log.push({ s: start, sec, done });
+    save();
+    refreshCalendar();
+  }
+
+  function render() {
+    const t = left();
+    el.time.textContent = p2(Math.floor(t / 60)) + ':' + p2(t % 60);
+    box.dataset.mode = S.mode;
+    box.classList.toggle('running', S.run);
+    el.label.textContent = S.mode === 'break' ? (S.run ? 'Nghỉ ngơi' : 'Giờ nghỉ 5 phút') : S.run ? 'Đang tập trung' : (S.acc > 0 ? 'Tạm dừng' : 'Phiên 25 phút');
+    el.go.textContent = S.run ? '⏸' : '▶';
+    el.go.title = S.run ? 'Tạm dừng' : (S.acc > 0 ? 'Tiếp tục' : 'Bắt đầu');
+    el.stop.hidden = !(S.run || S.acc > 0);
+    el.bar.style.width = Math.min(100, used() / (total() * 10)) + '%';
+    const s = stats()[dayKey(Date.now())];
+    el.today.textContent = s ? 'Hôm nay: ' + mins(s.sec) + ' phút · ' + s.n + ' phiên' : 'Hôm nay: chưa học';
+    document.title = S.run ? (S.mode === 'focus' ? '🍅 ' : '☕ ') + p2(Math.floor(t / 60)) + ':' + p2(t % 60) + ' · ' + baseTitle : baseTitle;
+  }
+
+  function halt() { clearInterval(S.iv); S.iv = 0; S.run = false; S.acc = 0; }
+
+  function finish() {
+    const wasFocus = S.mode === 'focus';
+    const start = S.start;
+    halt();
+    beep();
+    if (wasFocus) {
+      addLog(start, FOCUS, true);
+      S.mode = 'break';
+      showToast('Hết 25 phút! Đã lưu phiên học lên lịch. Nghỉ 5 phút nhé.', false);
+    } else {
+      S.mode = 'focus';
+      showToast('Hết giờ nghỉ, sẵn sàng cho phiên tiếp theo.', false);
+    }
+    render();
+  }
+
+  function tick() { if (left() <= 0) finish(); else render(); }
+
+  el.go.addEventListener('click', () => {
+    if (!S.run) {
+      if (S.mode === 'focus' && S.acc === 0) S.start = Date.now();
+      S.t0 = Date.now(); S.run = true;
+      S.iv = setInterval(tick, 500);
+    } else {
+      S.acc += Date.now() - S.t0; S.run = false;
+      clearInterval(S.iv); S.iv = 0;
+    }
+    render();
+  });
+
+  el.stop.addEventListener('click', () => {
+    if (S.mode === 'focus') {
+      const sec = Math.round(used() / 1000), start = S.start;
+      halt();
+      if (sec >= 60) { addLog(start, sec, false); showToast('Đã lưu ' + mins(sec) + ' phút học lên lịch.', false); }
+      else showToast('Phiên chưa đủ 1 phút nên chưa được lưu.', false);
+    } else {
+      halt(); S.mode = 'focus';
+    }
+    render();
+  });
+
+  window.addEventListener('pagehide', () => {
+    if (S.mode !== 'focus') return;
+    const sec = Math.round(used() / 1000);
+    if (sec >= 60) { log.push({ s: S.start, sec, done: false }); save(); }
+  });
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.run) tick(); });
+
+  render();
+  refreshCalendar();
 })();
 </script>
 </body>
