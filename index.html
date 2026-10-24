@@ -209,7 +209,6 @@
 <style id="trace-merged-styles">
   .mode-tabs { align-items:stretch; }
   .mode-tab { min-height:42px; justify-content:center; }
-  .mode-tab[data-trace-mode="study"].active { border-color:#10B981; }
   .mode-tab[data-trace-mode="debug"].active { border-color:#F59E0B; }
   .mode-tab[data-trace-mode="mindmap"].active { border-color:#8B5CF6; }
   .mode-tab[data-trace-mode="quiz"].active { border-color:#EC4899; }
@@ -792,6 +791,13 @@ html,body{overscroll-behavior-y:none}
 .pomo-ic{font-size:1rem;line-height:1}
 .pomo-time{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:3.5rem}
 .pomo-label{font-size:.75rem;font-weight:700;color:var(--tc-muted)}
+.pomo-label:empty{display:none}
+.pomo-set{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:var(--tc-muted)}
+.pomo-set input{width:3.2rem;padding:3px 4px;border-radius:8px;border:2px solid var(--tc-border);background:var(--sk-surface,#fff);color:var(--tc-text);font-size:.8rem;font-weight:700;text-align:center;-moz-appearance:textfield}
+.pomo-set input::-webkit-outer-spin-button,.pomo-set input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pomo-set input:focus{outline:none;border-color:var(--sk-accent,#2563EB)}
+.pomo-set input:disabled{opacity:.55;cursor:not-allowed}
+.pomo-set.off{display:none}
 .pomo-btn{width:30px;height:30px;border-radius:50%;border:2px solid var(--tc-border);background:var(--sk-surface,#fff);color:var(--tc-text);display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;line-height:1;padding:0;cursor:pointer}
 .pomo-btn:hover{border-color:var(--sk-accent,#2563EB)}
 .pomo-btn.main{background:var(--sk-grad,linear-gradient(135deg,#2563EB,#7C3AED));border-color:transparent;color:var(--sk-on,#fff)}
@@ -1017,7 +1023,6 @@ html,body{overscroll-behavior-y:none}
             <div class="mode-tabs" role="tablist">
                 <button type="button" id="tab-qa" data-trace-mode="qa" class="mode-tab active" title="Hỏi đáp kiến thức"><i class="fa fa-lightbulb-o"></i><span>Hỏi đáp</span></button>
                 <button type="button" id="tab-en" data-trace-mode="en" class="mode-tab" title="Luyện tiếng Anh"><i class="fa fa-comments-o"></i><span>Tiếng Anh</span></button>
-                <button type="button" id="tab-study" data-trace-mode="study" class="mode-tab" title="Học tập"><i class="fa fa-book"></i><span>Học tập</span></button>
                 <button type="button" id="tab-debug" data-trace-mode="debug" class="mode-tab" title="Sửa lỗi code"><i class="fa fa-bug"></i><span>Sửa code</span></button>
                 <button type="button" id="tab-learnfix" data-trace-mode="learnfix" class="mode-tab" title="Phân tích lỗi sai trong học tập"><i class="fa fa-book"></i><span>Sửa lỗi học tập</span></button>
                 <button type="button" id="tab-mindmap" data-trace-mode="mindmap" class="mode-tab" title="Sơ đồ tư duy"><i class="fa fa-sitemap"></i><span>Sơ đồ</span></button>
@@ -1140,7 +1145,8 @@ html,body{overscroll-behavior-y:none}
                 <div id="pomo" class="pomo" data-mode="focus">
                     <span class="pomo-ic" aria-hidden="true">🍅</span>
                     <span id="pomo-time" class="pomo-time">25:00</span>
-                    <span id="pomo-label" class="pomo-label">Phiên 25 phút</span>
+                    <label class="pomo-set" title="Số phút của mỗi phiên"><input type="number" id="pomo-len" min="1" max="180" step="1" value="25" inputmode="numeric" aria-label="Số phút của phiên"><span>phút</span></label>
+                    <span id="pomo-label" class="pomo-label"></span>
                     <button type="button" id="pomo-go" class="pomo-btn main" title="Bắt đầu">▶</button>
                     <button type="button" id="pomo-stop" class="pomo-btn" title="Kết thúc và lưu lên lịch" hidden>⏹</button>
                     <span id="pomo-today" class="pomo-today"></span>
@@ -2788,7 +2794,6 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         const TRACE_MODE_META = {
             qa: { label: 'Hỏi đáp kiến thức', emoji: '💬', title: 'Trace AI — Hỏi đáp kiến thức', subtitle: 'Đặt câu hỏi bằng tiếng Việt, gửi ảnh bài tập hoặc nói qua micro.', placeholder: 'Đặt câu hỏi bằng tiếng Việt…', prompts: ['Giải thích định luật II Newton bằng ví dụ', 'Giải bài tập trong ảnh này', 'Giải thích từng bước một bài Toán'], instruction: '' },
             en: { label: 'Luyện tiếng Anh', emoji: '🗣️', title: 'Trace AI — Luyện nói tiếng Anh', subtitle: 'Trò chuyện tiếng Anh, chọn trình độ A1–A2, B1–B2 hoặc C1+; AI sửa lỗi nhẹ nhàng.', placeholder: 'Type or speak in English…', prompts: [], instruction: '' },
-            study: { label: 'Học tập', emoji: '📚', title: 'Trace AI — Gia sư học tập', subtitle: 'Giải thích kiến thức theo từng bước, có ví dụ và câu hỏi kiểm tra nhanh.', placeholder: 'Nhập môn học, chủ đề hoặc bài tập cần hiểu…', prompts: ['Giải thích một khái niệm theo từng bước', 'Giải bài tập và nêu vì sao từng bước đúng', 'Tạo kế hoạch ôn tập 7 ngày'], instruction: 'Bạn đang ở chế độ GIA SƯ HỌC TẬP. Bắt buộc trả lời bằng tiếng Việt. Giải thích theo thứ tự: ý chính, các bước dễ hiểu, ví dụ, lỗi thường gặp và 1–3 câu kiểm tra nhanh không kèm đáp án. Không chỉ đưa kết quả; hãy giúp người học hiểu vì sao.' },
             debug: { label: 'Sửa lỗi code', emoji: '🔍', title: 'Trace AI — Phân tích và sửa lỗi', subtitle: 'Dán code và thông báo lỗi để tìm nguyên nhân, bản sửa và cách phòng tránh.', placeholder: 'Dán code và thông báo lỗi vào đây…', prompts: ['Tìm và sửa lỗi trong đoạn code này:', 'Giải thích thông báo lỗi này:', 'Review code và tìm bug tiềm ẩn:'], instruction: 'Bạn đang ở chế độ DEBUG CODE. Trả lời bằng tiếng Việt. Trình bày: (1) nguyên nhân, (2) code đã sửa trong khối code có nhãn ngôn ngữ, (3) giải thích thay đổi, (4) cách phòng tránh. Không tự bịa thư viện/hàm; nếu thiếu dữ kiện hãy nêu giả định.' },
             learnfix: { label: 'Sửa lỗi học tập', emoji: '🧩', title: 'Trace AI — Sửa lỗi học tập', subtitle: 'Tìm nguyên nhân sai trong bài Toán, Văn, tiếng Anh và các môn học — không phải sửa code.', placeholder: 'Dán đề bài, cách làm của bạn và đáp án/nhận xét của giáo viên (nếu có)…', prompts: ['Phân tích vì sao em làm sai bài này:', 'Em chọn đáp án này vì… Hãy tìm chỗ hiểu nhầm:', 'Tạo một bài tương tự để em thử lại:'], instruction: 'Bạn là chuyên gia phân tích LỖI SAI TRONG HỌC TẬP, KHÔNG phải trình sửa code. Trả lời bằng tiếng Việt, nhẹ nhàng và không phán xét. Xác định loại lỗi phù hợp: hiểu sai khái niệm, đọc thiếu dữ kiện, chọn sai công thức/quy tắc, tính toán, lập luận, ghi nhớ hoặc trình bày. Tách rõ: (1) Em đã làm gì/điểm sai ở đâu, (2) vì sao cách nghĩ đó dễ dẫn đến sai, (3) kiến thức đúng và lời giải từng bước, (4) mẹo tự kiểm tra để tránh lặp lại, (5) một câu/bài tương tự để luyện. Nếu chưa có bài làm của học sinh thì không đoán lỗi; hãy yêu cầu gửi cách làm hoặc nêu các khả năng có thể gặp. Không chỉ đưa đáp án cuối.' },
             mindmap: { label: 'Sơ đồ tư duy', emoji: '🌳', title: 'Trace AI — Sơ đồ tư duy', subtitle: 'Sơ đồ dạng thẻ trực quan có hình minh họa cho chủ đề và từng nhánh, không chỉ là các đường nối.', placeholder: 'Nhập chủ đề cần tạo sơ đồ tư duy…', prompts: ['Vẽ sơ đồ tư duy có hình minh họa về chu trình nước', 'Tạo sơ đồ tư duy về các thì tiếng Anh', 'Tóm tắt bài học sau thành sơ đồ tư duy:'], instruction: 'Bạn đang ở chế độ SƠ ĐỒ TƯ DUY. Trả lời bằng tiếng Việt, mở đầu một câu ngắn rồi xuất đúng một khối code nhãn mindmap. Dòng đầu là chủ đề trung tâm; nhánh chính bắt đầu bằng "- "; mỗi cấp con thụt vào 2 dấu cách. Có 4–7 nhánh chính, mỗi nhánh có 2–4 ý con ngắn. Chỉ dùng cụm từ rõ nghĩa, tối đa khoảng 8 từ mỗi ý. Sau sơ đồ thêm 2 mẹo ghi nhớ. Phần giao diện sẽ tự thêm hình minh họa phù hợp cho chủ đề và mỗi nhánh.' },
@@ -2801,7 +2806,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         let tracePendingMode = traceMode;
         // Mỗi chế độ có khung hội thoại và ngữ cảnh AI riêng. Chỉ lưu phần HTML
         // trong phiên hiện tại; không đổi theme hay cấu hình API.
-        const traceChatViewModes = ['qa', 'study', 'debug', 'learnfix', 'mindmap'];
+        const traceChatViewModes = ['qa', 'debug', 'learnfix', 'mindmap'];
         const traceModeViews = { qa: chatMessages.innerHTML };
         const traceModeHistories = { qa: chatHistory };
         let traceModeInitialized = false;
@@ -2912,7 +2917,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         }
         document.getElementById('tab-qa').addEventListener('click', () => traceSetMode('qa', true));
         document.getElementById('tab-en').addEventListener('click', () => traceSetMode('en', true));
-        ['study', 'debug', 'learnfix', 'mindmap', 'quiz', 'progress'].forEach(mode => {
+        ['debug', 'learnfix', 'mindmap', 'quiz', 'progress'].forEach(mode => {
             const tab = document.querySelector(`[data-trace-mode="${mode}"]`);
             tab.addEventListener('click', () => traceSetMode(mode));
         });
@@ -2931,7 +2936,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         };
 
         function traceRecordAnswer(mode, question, answer) {
-            if (!['study', 'debug', 'learnfix', 'mindmap', 'quiz'].includes(mode)) return;
+            if (!['debug', 'learnfix', 'mindmap', 'quiz'].includes(mode)) return;
             const plain = String(answer || '').trim();
             if (!plain || plain.startsWith('❌')) return;
             const item = {
@@ -3082,20 +3087,19 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         function renderTraceProgress() {
             const count = mode => traceRecords.filter(record => record.mode === mode).length;
             const stats = [
-                ['📚', count('study'), 'Phiên học tập'],
                 ['🔍', count('debug'), 'Lần sửa code'],
                 ['🧩', count('learnfix'), 'Lỗi học tập đã phân tích'],
                 ['🌳', count('mindmap'), 'Sơ đồ tư duy'],
                 ['📝', count('quiz'), 'Bài kiểm tra']
             ];
             const statHtml = stats.map(item => `<div class="trace-stat"><div>${item[0]}</div><div class="n">${item[1]}</div><div class="l">${item[2]}</div></div>`).join('');
-            const recent = [...traceRecords].reverse().slice(0, 20);
+            const recent = traceRecords.filter(record => record.mode !== 'study').reverse().slice(0, 20);
             const recentHtml = recent.length ? recent.map(record => {
                 const question = escapeHtml(record.question || record.label || 'Phiên học');
                 const date = new Date(record.date).toLocaleString('vi-VN');
                 const summary = escapeHtml(record.summary || 'Đã hoàn thành một hoạt động học tập.');
                 return `<div class="trace-progress-item"><p><strong>${escapeHtml(record.label || TRACE_MODE_META[record.mode]?.label || 'Hoạt động')}</strong> · ${question}</p><small>${date}</small><p style="margin-top:7px;color:var(--tc-muted);font-size:.8rem">${summary}</p>${record.outline ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:#2563EB;font-size:.8rem;font-weight:700">Xem nội dung sơ đồ</summary><pre style="white-space:pre-wrap;margin-top:6px">${escapeHtml(record.outline)}</pre></details>` : ''}</div>`;
-            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Học tập, Sửa lỗi code, Sửa lỗi học tập, Sơ đồ tư duy hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
+            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Sửa lỗi code, Sửa lỗi học tập, Sơ đồ tư duy hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
             chatMessages.innerHTML = `<div class="trace-stat-grid">${statHtml}</div><section class="trace-progress-section"><div class="flex items-center justify-between gap-3 flex-wrap"><h3>🧭 Hoạt động gần đây</h3><button type="button" id="trace-clear-progress" class="trace-clear">Xóa lộ trình</button></div><div>${recentHtml}</div></section><p style="font-size:.72rem;text-align:center;color:var(--tc-muted)">Lịch sử này chỉ được lưu trong trình duyệt trên thiết bị của bạn.</p>`;
             chatMessages.scrollTop = 0;
         }
@@ -4172,8 +4176,9 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   const $ = id => document.getElementById(id);
   const box = $('pomo');
   if (!box) return;
-  const FOCUS = 1500, BREAK = 300, KEY = 'pomo_log';
-  const el = { time: $('pomo-time'), label: $('pomo-label'), go: $('pomo-go'), stop: $('pomo-stop'), today: $('pomo-today'), bar: $('pomo-bar') };
+  const BREAK = 300, KEY = 'pomo_log', LEN_KEY = 'pomo_len';
+  let FOCUS = 1500;
+  const el = { len: $('pomo-len'), set: document.querySelector('.pomo-set'), time: $('pomo-time'), label: $('pomo-label'), go: $('pomo-go'), stop: $('pomo-stop'), today: $('pomo-today'), bar: $('pomo-bar') };
   const baseTitle = document.title;
   const p2 = n => String(n).padStart(2, '0');
   const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
@@ -4184,6 +4189,9 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     const a = JSON.parse(store.get(KEY) || '[]');
     if (Array.isArray(a)) log = a.filter(x => x && typeof x.s === 'number' && typeof x.sec === 'number');
   } catch (e) {}
+  const clampLen = v => { const x = Math.round(Number(v)); return String(v == null ? '' : v).trim() === '' || isNaN(x) ? 25 : Math.min(180, Math.max(1, x)); };
+  FOCUS = clampLen(store.get(LEN_KEY)) * 60;
+  el.len.value = FOCUS / 60;
   const save = () => store.set(KEY, JSON.stringify(log.slice(-400)));
   const total = () => (S.mode === 'focus' ? FOCUS : BREAK);
   const used = () => S.acc + (S.run ? Date.now() - S.t0 : 0);
@@ -4250,10 +4258,12 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     el.time.textContent = p2(Math.floor(t / 60)) + ':' + p2(t % 60);
     box.dataset.mode = S.mode;
     box.classList.toggle('running', S.run);
-    el.label.textContent = S.mode === 'break' ? (S.run ? 'Nghỉ ngơi' : 'Giờ nghỉ 5 phút') : S.run ? 'Đang tập trung' : (S.acc > 0 ? 'Tạm dừng' : 'Phiên 25 phút');
+    el.label.textContent = S.mode === 'break' ? (S.run ? 'Nghỉ ngơi' : 'Giờ nghỉ 5 phút') : S.run ? 'Đang tập trung' : (S.acc > 0 ? 'Tạm dừng' : '');
+    el.set.classList.toggle('off', S.mode === 'break');
+    el.len.disabled = S.run || S.acc > 0;
     el.go.textContent = S.run ? '⏸' : '▶';
     el.go.title = S.run ? 'Tạm dừng' : (S.acc > 0 ? 'Tiếp tục' : 'Bắt đầu');
-    el.stop.hidden = !(S.run || S.acc > 0);
+    el.stop.hidden = !(S.run || S.acc > 0 || S.mode === 'break');
     el.bar.style.width = Math.min(100, used() / (total() * 10)) + '%';
     const s = stats()[dayKey(Date.now())];
     el.today.textContent = s ? 'Hôm nay: ' + mins(s.sec) + ' phút · ' + s.n + ' phiên' : 'Hôm nay: chưa học';
@@ -4270,7 +4280,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     if (wasFocus) {
       addLog(start, FOCUS, true);
       S.mode = 'break';
-      showToast('Hết 25 phút! Đã lưu phiên học lên lịch. Nghỉ 5 phút nhé.', false);
+      showToast('Hết ' + FOCUS / 60 + ' phút! Đã lưu phiên học lên lịch. Nghỉ 5 phút nhé.', false);
     } else {
       S.mode = 'focus';
       showToast('Hết giờ nghỉ, sẵn sàng cho phiên tiếp theo.', false);
@@ -4279,6 +4289,17 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   }
 
   function tick() { if (left() <= 0) finish(); else render(); }
+
+  const applyLen = () => {
+    const m = clampLen(el.len.value);
+    el.len.value = m;
+    if (S.run || S.acc > 0 || S.mode !== 'focus') return;
+    FOCUS = m * 60;
+    store.set(LEN_KEY, String(m));
+    render();
+  };
+  el.len.addEventListener('change', applyLen);
+  el.len.addEventListener('keydown', e => { if (e.key === 'Enter') { applyLen(); el.len.blur(); } });
 
   el.go.addEventListener('click', () => {
     if (!S.run) {
