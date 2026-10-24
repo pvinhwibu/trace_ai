@@ -76,6 +76,14 @@
         @keyframes micpulse { 0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,.5); } 50% { box-shadow:0 0 0 8px rgba(239,68,68,0); } }
         .speak-btn { margin-top:8px; font-size:.75rem; color:#2563EB; background:#EFF6FF; border:1px solid #DBEAFE; border-radius:999px; padding:3px 10px; cursor:pointer; }
         .speak-btn:hover { background:#DBEAFE; }
+
+        /* Tốc độ đọc dùng chung cho mọi luồng phát âm của Trace AI */
+        .speech-speed-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 10px; color:var(--sk-muted,var(--tc-muted,#64748B)); font-size:.78rem; line-height:1.4; }
+        .speech-speed-row label { font-weight:700; }
+        .speech-speed-select { max-width:100%; border:1.5px solid var(--sk-border,var(--tc-border,#E2E8F0)); border-radius:10px; padding:6px 10px; color:var(--sk-text,var(--tc-text,#334155)); background:var(--sk-surface,#fff); font-size:.8rem; font-weight:700; outline:none; }
+        .speech-speed-select:focus { border-color:var(--sk-accent,#2563EB); box-shadow:0 0 0 3px var(--sk-glow,rgba(37,99,235,.12)); }
+        .vo-speed-row { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:16px; color:var(--sk-muted,#64748B); font-size:.8rem; }
+        .vo-speed-row .speech-speed-select { background:var(--sk-surface2,var(--sk-surface,#fff)); }
         /* ===== Tab chế độ & mục tiếng Anh ===== */
         .app-main { min-width:0; display:flex; flex-direction:column; gap:14px; }
         .mode-tabs { display:flex; flex-wrap:wrap; gap:8px; }
@@ -791,13 +799,6 @@ html,body{overscroll-behavior-y:none}
 .pomo-ic{font-size:1rem;line-height:1}
 .pomo-time{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:3.5rem}
 .pomo-label{font-size:.75rem;font-weight:700;color:var(--tc-muted)}
-.pomo-label:empty{display:none}
-.pomo-set{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:var(--tc-muted)}
-.pomo-set input{width:3.2rem;padding:3px 4px;border-radius:8px;border:2px solid var(--tc-border);background:var(--sk-surface,#fff);color:var(--tc-text);font-size:.8rem;font-weight:700;text-align:center;-moz-appearance:textfield}
-.pomo-set input::-webkit-outer-spin-button,.pomo-set input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.pomo-set input:focus{outline:none;border-color:var(--sk-accent,#2563EB)}
-.pomo-set input:disabled{opacity:.55;cursor:not-allowed}
-.pomo-set.off{display:none}
 .pomo-btn{width:30px;height:30px;border-radius:50%;border:2px solid var(--tc-border);background:var(--sk-surface,#fff);color:var(--tc-text);display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;line-height:1;padding:0;cursor:pointer}
 .pomo-btn:hover{border-color:var(--sk-accent,#2563EB)}
 .pomo-btn.main{background:var(--sk-grad,linear-gradient(135deg,#2563EB,#7C3AED));border-color:transparent;color:var(--sk-on,#fff)}
@@ -815,6 +816,39 @@ html,body{overscroll-behavior-y:none}
 .mm-img-row[hidden]{display:none}
 .mm-img-row input{width:18px;height:18px;accent-color:var(--sk-accent,#2563EB);cursor:pointer;flex:none}
 @media(prefers-reduced-motion:reduce){.pomo.running .pomo-ic{animation:none}.pomo-bar{transition:none}}
+</style>
+<style id="trace-v16-css">
+.trace-quiz-form [hidden],#trace-quiz-root [hidden],#trace-memo-root [hidden]{display:none!important}
+.trace-quiz-field textarea{width:100%;min-width:0;border:1.5px solid var(--sk-border,var(--tc-border,#cbd5e1));border-radius:12px;padding:11px 12px;background:var(--sk-surface,var(--sk-glass,#fff));color:var(--sk-text,var(--tc-text,#1e293b));outline:none;font-size:.9rem;line-height:1.5;resize:vertical;font-weight:450}
+.trace-quiz-field textarea:focus{border-color:var(--sk-accent,#2563eb);box-shadow:0 0 0 3px var(--sk-glow,rgba(37,99,235,.12))}
+.trace-mistakes{border:1.5px solid var(--sk-border,var(--tc-border,#cbd5e1));border-radius:14px;overflow:hidden;background:var(--sk-surface,#fff)}
+.trace-mistake-all{display:flex;align-items:center;gap:9px;padding:11px 13px;background:var(--sk-surface2,#f1f5f9);font-weight:800;cursor:pointer}
+.trace-mistake-list{max-height:260px;overflow:auto}
+.trace-mistake-item{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-top:1px solid var(--sk-border,var(--tc-border,#e2e8f0));cursor:pointer;font-size:.82rem;line-height:1.45;font-weight:500}
+.trace-mistake-item small{display:block;margin-top:2px;color:var(--sk-muted,var(--tc-muted,#64748b));font-size:.72rem}
+.trace-mistakes input[type=checkbox],.trace-memo-opt input[type=checkbox]{width:18px;height:18px;flex:none;margin-top:1px;accent-color:var(--sk-accent,#2563eb);cursor:pointer}
+.trace-quiz-empty{padding:14px;border-radius:12px;background:var(--sk-surface2,#f1f5f9);font-size:.82rem;line-height:1.55;font-weight:500}
+.trace-memo-opts{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.trace-memo-opt{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1.5px solid var(--sk-border,var(--tc-border,#cbd5e1));border-radius:14px;cursor:pointer;background:var(--sk-surface,#fff);font-weight:500}
+.trace-memo-opt:has(input:checked){border-color:var(--sk-accent,#2563eb);background:var(--sk-soft,#eaf2ff)}
+.trace-memo-opt b{display:block;font-size:.88rem}
+.trace-memo-opt small{display:block;margin-top:3px;font-size:.74rem;line-height:1.4;color:var(--sk-muted,var(--tc-muted,#64748b));font-weight:450}
+.trace-memo-results{padding:0 24px 24px;display:grid;gap:16px}
+.trace-memo-results:empty{display:none}
+.trace-memo-section{min-width:0;border:1px solid var(--sk-border,var(--tc-border,#e2e8f0));border-radius:18px;padding:16px;background:var(--sk-surface2,#f8fafc)}
+.trace-memo-section h4{font-weight:850;margin-bottom:12px;font-size:1rem}
+.trace-memo-body{min-width:0;font-size:.9rem;line-height:1.65;overflow-wrap:anywhere}
+.trace-memo-extra{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--sk-soft,#eaf2ff);font-size:.85rem;line-height:1.6}
+.trace-memo-err{color:#DC2626;font-size:.85rem;line-height:1.5}
+.trace-fc-meta{font-size:.76rem;font-weight:800;color:var(--sk-muted,var(--tc-muted,#64748b));margin-bottom:8px}
+.trace-fc-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:190px;padding:22px;border-radius:18px;text-align:center;cursor:pointer;background:var(--sk-surface,#fff);border:1.5px solid var(--sk-border,var(--tc-border,#cbd5e1));border-top:4px solid var(--sk-accent,#2563eb);transition:transform .18s,background .18s;user-select:none}
+.trace-fc-card:hover{transform:translateY(-1px)}
+.trace-fc-card.back{background:var(--sk-soft,#eaf2ff)}
+.trace-fc-side{font-size:.66rem;letter-spacing:.09em;font-weight:850;color:var(--sk-accent,#2563eb)}
+.trace-fc-text{font-size:1.05rem;font-weight:700;line-height:1.55;overflow-wrap:anywhere}
+.trace-fc-tip{font-size:.72rem;color:var(--sk-muted,var(--tc-muted,#64748b))}
+.trace-fc-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+@media(max-width:640px){.trace-memo-results{padding:0 16px 16px}.trace-memo-section{padding:12px}}
 </style>
 </head>
 <body class="font-sans text-neutral-800 min-h-screen flex flex-col scroll-smooth">
@@ -1025,7 +1059,7 @@ html,body{overscroll-behavior-y:none}
                 <button type="button" id="tab-en" data-trace-mode="en" class="mode-tab" title="Luyện tiếng Anh"><i class="fa fa-comments-o"></i><span>Tiếng Anh</span></button>
                 <button type="button" id="tab-debug" data-trace-mode="debug" class="mode-tab" title="Sửa lỗi code"><i class="fa fa-bug"></i><span>Sửa code</span></button>
                 <button type="button" id="tab-learnfix" data-trace-mode="learnfix" class="mode-tab" title="Phân tích lỗi sai trong học tập"><i class="fa fa-book"></i><span>Sửa lỗi học tập</span></button>
-                <button type="button" id="tab-mindmap" data-trace-mode="mindmap" class="mode-tab" title="Sơ đồ tư duy"><i class="fa fa-sitemap"></i><span>Sơ đồ</span></button>
+                <button type="button" id="tab-memo" data-trace-mode="memo" class="mode-tab" title="Ghi nhớ: sơ đồ tư duy, flashcard, tóm lược"><i class="fa fa-copy"></i><span>Ghi nhớ</span></button>
                 <button type="button" id="tab-quiz" data-trace-mode="quiz" class="mode-tab" title="Bài kiểm tra"><i class="fa fa-pencil-square-o"></i><span>Kiểm tra</span></button>
                 <button type="button" id="tab-progress" data-trace-mode="progress" class="mode-tab" title="Lộ trình học tập"><i class="fa fa-trophy"></i><span>Lộ trình</span></button>
                 <button type="button" id="tab-themes" class="mode-tab" title="Giao diện &amp; theme"><i class="fa fa-paint-brush"></i><span>Giao diện</span></button>
@@ -1063,6 +1097,13 @@ html,body{overscroll-behavior-y:none}
                     <!-- Xem trước ảnh đính kèm -->
                     <div id="image-preview" class="gap-2 flex-wrap mb-3" style="display:none"></div>
                     <label id="mm-img-row" class="mm-img-row" hidden><input type="checkbox" id="mm-img-toggle" checked><span>Kèm hình ảnh minh họa</span></label>
+                    <div class="speech-speed-row" aria-label="Tốc độ đọc câu trả lời">
+                        <label for="speech-rate-chat"><i class="fa fa-volume-up"></i> Tốc độ đọc:</label>
+                        <select id="speech-rate-chat" class="speech-speed-select" data-speech-rate>
+                            <option value="0.75">Chậm · 0,75×</option><option value="1">Bình thường · 1×</option><option value="1.25">Nhanh · 1,25×</option><option value="1.5">Rất nhanh · 1,5×</option>
+                        </select>
+                        <span>Áp dụng cho đọc câu trả lời và nút Nghe.</span>
+                    </div>
                     <div class="voice-bar" id="voice-bar" style="display:none" aria-hidden="true">
                         <button type="button" id="autospeak-btn" class="vbtn"><i class="fa fa-volume-up"></i> <span>Tự đọc câu trả lời: Tắt</span></button>
                         <button type="button" id="stop-speak-btn" class="vbtn" style="display:none"><i class="fa fa-stop"></i> <span>Dừng đọc</span></button>
@@ -1110,6 +1151,13 @@ html,body{overscroll-behavior-y:none}
                 </div>
                 <div id="en-messages" class="flex-1 p-4 md:p-6 overflow-y-auto bg-neutral-50/50 space-y-4"></div>
                 <div class="p-4 border-t border-neutral-100 bg-white">
+                    <div class="speech-speed-row" aria-label="Speech playback speed">
+                        <label for="speech-rate-en"><i class="fa fa-volume-up"></i> Speaking speed:</label>
+                        <select id="speech-rate-en" class="speech-speed-select" data-speech-rate>
+                            <option value="0.75">Slow · 0.75×</option><option value="1">Normal · 1×</option><option value="1.25">Fast · 1.25×</option><option value="1.5">Very fast · 1.5×</option>
+                        </select>
+                        <span>Applies to all spoken replies.</span>
+                    </div>
                     <div class="voice-bar" style="display:none" aria-hidden="true">
                         <button type="button" id="en-voice-btn" class="vbtn"><i class="fa fa-headphones"></i> <span>Bắt đầu nói chuyện</span></button>
                         <button type="button" id="en-auto-btn" class="vbtn"><i class="fa fa-volume-up"></i> <span>Tự đọc: Bật</span></button>
@@ -1145,8 +1193,7 @@ html,body{overscroll-behavior-y:none}
                 <div id="pomo" class="pomo" data-mode="focus">
                     <span class="pomo-ic" aria-hidden="true">🍅</span>
                     <span id="pomo-time" class="pomo-time">25:00</span>
-                    <label class="pomo-set" title="Số phút của mỗi phiên"><input type="number" id="pomo-len" min="1" max="180" step="1" value="25" inputmode="numeric" aria-label="Số phút của phiên"><span>phút</span></label>
-                    <span id="pomo-label" class="pomo-label"></span>
+                    <span id="pomo-label" class="pomo-label">Phiên 25 phút</span>
                     <button type="button" id="pomo-go" class="pomo-btn main" title="Bắt đầu">▶</button>
                     <button type="button" id="pomo-stop" class="pomo-btn" title="Kết thúc và lưu lên lịch" hidden>⏹</button>
                     <span id="pomo-today" class="pomo-today"></span>
@@ -1193,6 +1240,12 @@ html,body{overscroll-behavior-y:none}
             <div class="vo-cap" id="vo-cap"></div>
         </div>
         <div class="vo-foot">
+            <div class="vo-speed-row" aria-label="Tốc độ nói của AI">
+                <label for="speech-rate-voice"><i class="fa fa-volume-up"></i> Tốc độ nói</label>
+                <select id="speech-rate-voice" class="speech-speed-select" data-speech-rate>
+                    <option value="0.75">Chậm · 0,75×</option><option value="1">Bình thường · 1×</option><option value="1.25">Nhanh · 1,25×</option><option value="1.5">Rất nhanh · 1,5×</option>
+                </select>
+            </div>
             <div class="vo-bar">
                 <button type="button" class="vo-ctl" id="vo-mute" aria-label="Tắt micro" title="Tắt micro" aria-pressed="false"></button>
                 <button type="button" class="vo-ctl end" id="vo-end" aria-label="Kết thúc trò chuyện" title="Kết thúc (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1945,6 +1998,21 @@ html,body{overscroll-behavior-y:none}
         let silentCount = 0;
         let recogFatal = '';
         let warnedNoVoice = false;
+        const SPEECH_RATE_KEY = 'trace_speech_rate_v1';
+        const speechRateControls = Array.from(document.querySelectorAll('[data-speech-rate]'));
+        const SUPPORTED_SPEECH_RATES = [0.75, 1, 1.25, 1.5];
+        let speechRate = Number(store.get(SPEECH_RATE_KEY) || 1);
+        if (!SUPPORTED_SPEECH_RATES.includes(speechRate)) speechRate = 1;
+        function setSpeechRate(value, persist = true) {
+            const parsed = Number(value);
+            speechRate = SUPPORTED_SPEECH_RATES.includes(parsed) ? parsed : 1;
+            speechRateControls.forEach(control => { control.value = String(speechRate); });
+            if (persist) store.set(SPEECH_RATE_KEY, String(speechRate));
+        }
+        speechRateControls.forEach(control => {
+            control.value = String(speechRate);
+            control.addEventListener('change', () => setSpeechRate(control.value));
+        });
         function setVoiceStatus(t) { voiceStatus.textContent = t || ''; }
         // ---- Chuyển nội dung thành văn bản dễ đọc thành tiếng ----
         function mathToSpeech(tex) {
@@ -2050,7 +2118,7 @@ html,body{overscroll-behavior-y:none}
                 u.lang = lang;
                 if (window.VO) { VO.say(u.text); u.onboundary = () => VO.pulse(0.7); }
                 if (voice) u.voice = voice;
-                u.rate = 1;
+                u.rate = speechRate;
                 u.onend = next;
                 u.onerror = (e) => {
                     if (token !== speakToken) return;
@@ -2797,16 +2865,18 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             debug: { label: 'Sửa lỗi code', emoji: '🔍', title: 'Trace AI — Phân tích và sửa lỗi', subtitle: 'Dán code và thông báo lỗi để tìm nguyên nhân, bản sửa và cách phòng tránh.', placeholder: 'Dán code và thông báo lỗi vào đây…', prompts: ['Tìm và sửa lỗi trong đoạn code này:', 'Giải thích thông báo lỗi này:', 'Review code và tìm bug tiềm ẩn:'], instruction: 'Bạn đang ở chế độ DEBUG CODE. Trả lời bằng tiếng Việt. Trình bày: (1) nguyên nhân, (2) code đã sửa trong khối code có nhãn ngôn ngữ, (3) giải thích thay đổi, (4) cách phòng tránh. Không tự bịa thư viện/hàm; nếu thiếu dữ kiện hãy nêu giả định.' },
             learnfix: { label: 'Sửa lỗi học tập', emoji: '🧩', title: 'Trace AI — Sửa lỗi học tập', subtitle: 'Tìm nguyên nhân sai trong bài Toán, Văn, tiếng Anh và các môn học — không phải sửa code.', placeholder: 'Dán đề bài, cách làm của bạn và đáp án/nhận xét của giáo viên (nếu có)…', prompts: ['Phân tích vì sao em làm sai bài này:', 'Em chọn đáp án này vì… Hãy tìm chỗ hiểu nhầm:', 'Tạo một bài tương tự để em thử lại:'], instruction: 'Bạn là chuyên gia phân tích LỖI SAI TRONG HỌC TẬP, KHÔNG phải trình sửa code. Trả lời bằng tiếng Việt, nhẹ nhàng và không phán xét. Xác định loại lỗi phù hợp: hiểu sai khái niệm, đọc thiếu dữ kiện, chọn sai công thức/quy tắc, tính toán, lập luận, ghi nhớ hoặc trình bày. Tách rõ: (1) Em đã làm gì/điểm sai ở đâu, (2) vì sao cách nghĩ đó dễ dẫn đến sai, (3) kiến thức đúng và lời giải từng bước, (4) mẹo tự kiểm tra để tránh lặp lại, (5) một câu/bài tương tự để luyện. Nếu chưa có bài làm của học sinh thì không đoán lỗi; hãy yêu cầu gửi cách làm hoặc nêu các khả năng có thể gặp. Không chỉ đưa đáp án cuối.' },
             mindmap: { label: 'Sơ đồ tư duy', emoji: '🌳', title: 'Trace AI — Sơ đồ tư duy', subtitle: 'Sơ đồ dạng thẻ trực quan có hình minh họa cho chủ đề và từng nhánh, không chỉ là các đường nối.', placeholder: 'Nhập chủ đề cần tạo sơ đồ tư duy…', prompts: ['Vẽ sơ đồ tư duy có hình minh họa về chu trình nước', 'Tạo sơ đồ tư duy về các thì tiếng Anh', 'Tóm tắt bài học sau thành sơ đồ tư duy:'], instruction: 'Bạn đang ở chế độ SƠ ĐỒ TƯ DUY. Trả lời bằng tiếng Việt, mở đầu một câu ngắn rồi xuất đúng một khối code nhãn mindmap. Dòng đầu là chủ đề trung tâm; nhánh chính bắt đầu bằng "- "; mỗi cấp con thụt vào 2 dấu cách. Có 4–7 nhánh chính, mỗi nhánh có 2–4 ý con ngắn. Chỉ dùng cụm từ rõ nghĩa, tối đa khoảng 8 từ mỗi ý. Sau sơ đồ thêm 2 mẹo ghi nhớ. Phần giao diện sẽ tự thêm hình minh họa phù hợp cho chủ đề và mỗi nhánh.' },
-            quiz: { label: 'Bài kiểm tra', emoji: '📝', title: 'Trace AI — Bài kiểm tra', subtitle: 'Thi thử như một quiz tương tác: chọn số câu, thời gian, cấp học và độ khó trước khi bắt đầu.', placeholder: 'Chọn cấu hình trong bảng Bài kiểm tra bên dưới…', prompts: [], instruction: 'Bạn đang ở chế độ TẠO BÀI KIỂM TRA tương tác. Khi được yêu cầu tạo đề, xuất DUY NHẤT JSON hợp lệ theo schema do ứng dụng yêu cầu; không Markdown, không thêm chữ bên ngoài JSON. Không đưa đáp án vào nội dung câu hỏi; câu trả lời đúng chỉ đặt trong answerIndex hoặc answer và giải thích riêng. Khi người học chọn đáp án, giao diện sẽ tự chấm.' },
+            memo: { label: 'Ghi nhớ', emoji: '🧠', title: 'Trace AI — Ghi nhớ', subtitle: 'Biến bài học thành sơ đồ tư duy, flashcard hoặc tóm lược ý chính — chọn một hoặc nhiều dạng cho cùng một chủ đề.', placeholder: '', prompts: [], instruction: '' },
+            quiz: { label: 'Bài kiểm tra', emoji: '📝', title: 'Trace AI — Bài kiểm tra', subtitle: 'Tạo đề theo chủ đề hoặc từ các lỗi sai đã phân tích; tuỳ chỉnh 1–50 câu và 5–60 phút.', placeholder: 'Chọn cấu hình trong bảng Bài kiểm tra bên dưới…', prompts: [], instruction: 'Bạn đang ở chế độ TẠO BÀI KIỂM TRA tương tác. Khi được yêu cầu tạo đề, xuất DUY NHẤT JSON hợp lệ theo schema do ứng dụng yêu cầu; không Markdown, không thêm chữ bên ngoài JSON. Không đưa đáp án vào nội dung câu hỏi; câu trả lời đúng chỉ đặt trong answerIndex hoặc answer và giải thích riêng. Khi người học chọn đáp án, giao diện sẽ tự chấm.' },
             progress: { label: 'Lộ trình', emoji: '📈', title: 'Trace AI — Lộ trình học tập', subtitle: 'Theo dõi các phiên học tập, sửa lỗi, sơ đồ tư duy và bài kiểm tra đã tạo.', placeholder: '', prompts: [], instruction: '' }
         };
         let traceMode = store.get('trace_mode') || (store.get('mode') === 'en' ? 'en' : 'qa');
+        if (traceMode === 'mindmap') traceMode = 'memo';
         if (!TRACE_MODE_META[traceMode]) traceMode = 'qa';
         let traceLastQuestion = '';
         let tracePendingMode = traceMode;
         // Mỗi chế độ có khung hội thoại và ngữ cảnh AI riêng. Chỉ lưu phần HTML
         // trong phiên hiện tại; không đổi theme hay cấu hình API.
-        const traceChatViewModes = ['qa', 'debug', 'learnfix', 'mindmap'];
+        const traceChatViewModes = ['qa', 'debug', 'learnfix'];
         const traceModeViews = { qa: chatMessages.innerHTML };
         const traceModeHistories = { qa: chatHistory };
         let traceModeInitialized = false;
@@ -2835,7 +2905,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         function traceLoadRecords() {
             try {
                 const data = JSON.parse(store.get(TRACE_PROGRESS_KEY) || '[]');
-                return Array.isArray(data) ? data.filter(x => x && typeof x === 'object') : [];
+                return Array.isArray(data) ? data.filter(x => x && typeof x === 'object' && x.mode !== 'study') : [];
             } catch (_) { return []; }
         }
         let traceRecords = traceLoadRecords();
@@ -2844,7 +2914,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         function traceSetMode(mode, baseAlreadySet = false) {
             if (!TRACE_MODE_META[mode]) mode = 'qa';
             const previous = traceMode;
-            if (previous !== mode && sending) {
+            if (previous !== mode && (sending || window.traceGenBusy)) {
                 showToast('Trace AI đang trả lời. Hãy đợi câu trả lời xong rồi chuyển chế độ.', false);
                 return;
             }
@@ -2866,9 +2936,11 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             const meta = TRACE_MODE_META[mode];
             const quizRoot = document.getElementById('trace-quiz-root');
             if (quizRoot) quizRoot.hidden = mode !== 'quiz';
+            const memoRoot = document.getElementById('trace-memo-root');
+            if (memoRoot) memoRoot.hidden = mode !== 'memo';
 
             // English có khung và lịch sử riêng; Quiz cũng có giao diện riêng.
-            chatCard.style.display = (mode === 'quiz' || mode === 'en') ? 'none' : '';
+            chatCard.style.display = (mode === 'quiz' || mode === 'en' || mode === 'memo') ? 'none' : '';
             traceWelcomeTitle.textContent = meta.title;
             traceWelcomeSubtitle.textContent = meta.subtitle;
             traceModeEmoji.textContent = meta.emoji;
@@ -2877,8 +2949,8 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 ? 'Dữ liệu lộ trình được lưu trên trình duyệt hiện tại, không cần tạo tài khoản.'
                 : meta.subtitle;
             userInput.placeholder = meta.placeholder || 'Lộ trình học tập';
-            traceInputPanel.style.display = (mode === 'progress' || mode === 'quiz' || mode === 'en') ? 'none' : '';
-            traceInfo.style.display = (mode === 'progress' || mode === 'quiz' || mode === 'en') ? 'none' : '';
+            traceInputPanel.style.display = (mode === 'progress' || mode === 'quiz' || mode === 'en' || mode === 'memo') ? 'none' : '';
+            traceInfo.style.display = (mode === 'progress' || mode === 'quiz' || mode === 'en' || mode === 'memo') ? 'none' : '';
 
             traceQuickPrompts.innerHTML = '';
             (meta.prompts || []).forEach(prompt => {
@@ -2903,6 +2975,8 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 } else {
                     traceRenderQuizSetup();
                 }
+            } else if (mode === 'memo') {
+                traceMemoEnsure();
             } else if (mode !== 'en') {
                 // Khi bấm lại tab đang mở, giữ nguyên nội dung hiện tại; chỉ khôi phục
                 // snapshot khi thật sự chuyển chế độ hoặc khởi tạo trang lần đầu.
@@ -2917,7 +2991,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         }
         document.getElementById('tab-qa').addEventListener('click', () => traceSetMode('qa', true));
         document.getElementById('tab-en').addEventListener('click', () => traceSetMode('en', true));
-        ['debug', 'learnfix', 'mindmap', 'quiz', 'progress'].forEach(mode => {
+        ['debug', 'learnfix', 'memo', 'quiz', 'progress'].forEach(mode => {
             const tab = document.querySelector(`[data-trace-mode="${mode}"]`);
             tab.addEventListener('click', () => traceSetMode(mode));
         });
@@ -2954,6 +3028,10 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             if (mode === 'quiz') {
                 const total = (plain.match(/(?:Câu|Question)\s*\d+\s*[.:]/gi) || []).length;
                 item.total = total;
+            }
+            if (mode === 'learnfix') {
+                item.fullQuestion = String(question || '').slice(0, 700);
+                item.detail = plain.slice(0, 2500);
             }
             traceRecords.push(item);
             traceRecords = traceRecords.slice(-60);
@@ -3089,17 +3167,17 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             const stats = [
                 ['🔍', count('debug'), 'Lần sửa code'],
                 ['🧩', count('learnfix'), 'Lỗi học tập đã phân tích'],
-                ['🌳', count('mindmap'), 'Sơ đồ tư duy'],
+                ['🧠', count('memo') + count('mindmap'), 'Lượt ghi nhớ'],
                 ['📝', count('quiz'), 'Bài kiểm tra']
             ];
             const statHtml = stats.map(item => `<div class="trace-stat"><div>${item[0]}</div><div class="n">${item[1]}</div><div class="l">${item[2]}</div></div>`).join('');
-            const recent = traceRecords.filter(record => record.mode !== 'study').reverse().slice(0, 20);
+            const recent = [...traceRecords].reverse().slice(0, 20);
             const recentHtml = recent.length ? recent.map(record => {
                 const question = escapeHtml(record.question || record.label || 'Phiên học');
                 const date = new Date(record.date).toLocaleString('vi-VN');
                 const summary = escapeHtml(record.summary || 'Đã hoàn thành một hoạt động học tập.');
                 return `<div class="trace-progress-item"><p><strong>${escapeHtml(record.label || TRACE_MODE_META[record.mode]?.label || 'Hoạt động')}</strong> · ${question}</p><small>${date}</small><p style="margin-top:7px;color:var(--tc-muted);font-size:.8rem">${summary}</p>${record.outline ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:#2563EB;font-size:.8rem;font-weight:700">Xem nội dung sơ đồ</summary><pre style="white-space:pre-wrap;margin-top:6px">${escapeHtml(record.outline)}</pre></details>` : ''}</div>`;
-            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Sửa lỗi code, Sửa lỗi học tập, Sơ đồ tư duy hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
+            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Hỏi đáp, Sửa lỗi code, Sửa lỗi học tập, Ghi nhớ hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
             chatMessages.innerHTML = `<div class="trace-stat-grid">${statHtml}</div><section class="trace-progress-section"><div class="flex items-center justify-between gap-3 flex-wrap"><h3>🧭 Hoạt động gần đây</h3><button type="button" id="trace-clear-progress" class="trace-clear">Xóa lộ trình</button></div><div>${recentHtml}</div></section><p style="font-size:.72rem;text-align:center;color:var(--tc-muted)">Lịch sử này chỉ được lưu trong trình duyệt trên thiết bị của bạn.</p>`;
             chatMessages.scrollTop = 0;
         }
@@ -3120,7 +3198,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         chatCard.parentNode.insertBefore(traceQuizRoot, chatCard);
         let traceQuizState = null;
         let traceQuizTimerId = null;
-        let traceQuizLastConfig = { topic: '', level: 'THCS', difficulty: 'Trung bình', count: '10', minutes: '10', type: 'multiple_choice' };
+        let traceQuizLastConfig = { source: 'topic', topic: '', level: 'THCS', difficulty: 'Trung bình', count: '10', minutes: '10', type: 'multiple_choice', selectedIds: null };
 
         function traceQuizStopTimer() {
             if (traceQuizTimerId) window.clearInterval(traceQuizTimerId);
@@ -3132,47 +3210,95 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             const old = document.getElementById('trace-quiz-error');
             if (old) old.textContent = message;
         }
+        function traceQuizMistakeItems() {
+            return traceRecords.filter(r => r && r.mode === 'learnfix').slice(-30).reverse();
+        }
+        function traceQuizClampInt(value, min, max, fallback) {
+            const n = Math.round(Number(value));
+            if (!Number.isFinite(n)) return fallback;
+            return Math.min(max, Math.max(min, n));
+        }
         function traceRenderQuizSetup(message = '') {
             traceQuizStopTimer();
             traceQuizState = null;
+            const cfg = traceQuizLastConfig;
+            const mistakes = traceQuizMistakeItems();
+            const chosen = Array.isArray(cfg.selectedIds) ? new Set(cfg.selectedIds) : null; // null = chọn tất cả
+            const mistakeRows = mistakes.map(r => {
+                const title = String(r.fullQuestion || r.question || 'Lỗi sai').replace(/\s+/g, ' ').slice(0, 110);
+                const date = new Date(r.date).toLocaleDateString('vi-VN');
+                return `<label class="trace-mistake-item"><input type="checkbox" class="trace-mistake-cb" value="${traceQuizEscapeAttr(r.id)}" ${(!chosen || chosen.has(r.id)) ? 'checked' : ''}><span>${traceQuizEscape(title)}<small>${date}</small></span></label>`;
+            }).join('');
+            const mistakeBox = mistakes.length
+                ? `<div class="trace-mistakes"><label class="trace-mistake-all"><input type="checkbox" id="trace-mistake-all"><span id="trace-mistake-all-text">Chọn tất cả</span></label><div class="trace-mistake-list">${mistakeRows}</div></div><span class="trace-quiz-hint">Chọn tất cả hoặc bỏ tích những lỗi bạn không muốn đưa vào đề. Hiển thị tối đa 30 lỗi gần nhất.</span>`
+                : `<div class="trace-quiz-empty">Chưa có lỗi sai nào được lưu. Hãy gửi bài làm trong mục <strong>Sửa lỗi học tập</strong> để Trace AI phân tích, sau đó quay lại đây tạo đề ôn tập.</div>`;
             traceQuizRoot.innerHTML = `<section class="trace-quiz-panel">
-                <header class="trace-quiz-head"><div class="trace-quiz-kicker">Trace AI · Quiz studio</div><h3>📝 Tạo bài kiểm tra của riêng bạn</h3><p>Chọn cấu hình trước, sau đó làm từng câu như một ứng dụng quiz: chọn đáp án, kiểm tra và xem kết quả ở cuối.</p></header>
+                <header class="trace-quiz-head"><div class="trace-quiz-kicker">Trace AI · Quiz studio</div><h3>📝 Tạo bài kiểm tra của riêng bạn</h3><p>Tạo đề theo chủ đề hoặc dựa trên các lỗi sai bạn đã phân tích, rồi làm từng câu và xem kết quả ở cuối.</p></header>
                 ${message ? `<div id="trace-quiz-error" class="trace-quiz-error" role="alert">${traceQuizEscape(message)}</div>` : ''}
                 <form id="trace-quiz-config" class="trace-quiz-form">
-                    <label class="trace-quiz-field full">Chủ đề cần kiểm tra
-                        <input id="trace-quiz-topic" name="topic" maxlength="240" required placeholder="Ví dụ: Toán 7 — tỉ lệ thức; Tiếng Anh — thì hiện tại đơn" value="${traceQuizEscapeAttr(traceQuizLastConfig.topic)}">
+                    <label class="trace-quiz-field full">Nguồn câu hỏi
+                        <select id="trace-quiz-source"><option value="topic" ${cfg.source !== 'mistakes' ? 'selected' : ''}>Theo chủ đề tự nhập</option><option value="mistakes" ${cfg.source === 'mistakes' ? 'selected' : ''}>Dựa trên lỗi sai trong “Sửa lỗi học tập”</option></select>
+                    </label>
+                    <label class="trace-quiz-field full" id="trace-quiz-topic-box">Chủ đề cần kiểm tra
+                        <input id="trace-quiz-topic" name="topic" maxlength="240" placeholder="Ví dụ: Toán 7 — tỉ lệ thức; Tiếng Anh — thì hiện tại đơn" value="${traceQuizEscapeAttr(cfg.topic)}">
                         <span class="trace-quiz-hint">Hãy ghi cả môn học và bài/chủ đề để đề sát với nội dung bạn đang học.</span>
                     </label>
+                    <div class="trace-quiz-field full" id="trace-quiz-mistake-box" hidden>Lỗi sai dùng để tạo đề${mistakeBox}</div>
                     <label class="trace-quiz-field">Cấp học / trình độ
-                        <select id="trace-quiz-level" name="level"><option ${traceQuizLastConfig.level==='Tiểu học'?'selected':''}>Tiểu học</option><option ${traceQuizLastConfig.level==='THCS'?'selected':''}>THCS</option><option ${traceQuizLastConfig.level==='THPT'?'selected':''}>THPT</option><option ${traceQuizLastConfig.level==='Nâng cao'?'selected':''}>Nâng cao</option></select>
+                        <select id="trace-quiz-level"><option ${cfg.level === 'Tiểu học' ? 'selected' : ''}>Tiểu học</option><option ${cfg.level === 'THCS' ? 'selected' : ''}>THCS</option><option ${cfg.level === 'THPT' ? 'selected' : ''}>THPT</option><option ${cfg.level === 'Nâng cao' ? 'selected' : ''}>Nâng cao</option></select>
                     </label>
                     <label class="trace-quiz-field">Độ khó
-                        <select id="trace-quiz-difficulty" name="difficulty"><option ${traceQuizLastConfig.difficulty==='Dễ'?'selected':''}>Dễ</option><option ${traceQuizLastConfig.difficulty==='Trung bình'?'selected':''}>Trung bình</option><option ${traceQuizLastConfig.difficulty==='Khó'?'selected':''}>Khó</option></select>
+                        <select id="trace-quiz-difficulty"><option ${cfg.difficulty === 'Dễ' ? 'selected' : ''}>Dễ</option><option ${cfg.difficulty === 'Trung bình' ? 'selected' : ''}>Trung bình</option><option ${cfg.difficulty === 'Khó' ? 'selected' : ''}>Khó</option></select>
                     </label>
-                    <label class="trace-quiz-field">Số câu hỏi
-                        <select id="trace-quiz-count" name="count"><option value="5" ${traceQuizLastConfig.count==='5'?'selected':''}>5 câu</option><option value="10" ${traceQuizLastConfig.count==='10'?'selected':''}>10 câu</option><option value="15" ${traceQuizLastConfig.count==='15'?'selected':''}>15 câu</option><option value="20" ${traceQuizLastConfig.count==='20'?'selected':''}>20 câu</option></select>
+                    <label class="trace-quiz-field">Số câu hỏi (1–50)
+                        <input id="trace-quiz-count" type="number" inputmode="numeric" min="1" max="50" step="1" required value="${traceQuizEscapeAttr(cfg.count)}">
                     </label>
-                    <label class="trace-quiz-field">Thời gian làm bài
-                        <select id="trace-quiz-minutes" name="minutes"><option value="5" ${traceQuizLastConfig.minutes==='5'?'selected':''}>5 phút</option><option value="10" ${traceQuizLastConfig.minutes==='10'?'selected':''}>10 phút</option><option value="15" ${traceQuizLastConfig.minutes==='15'?'selected':''}>15 phút</option><option value="20" ${traceQuizLastConfig.minutes==='20'?'selected':''}>20 phút</option><option value="30" ${traceQuizLastConfig.minutes==='30'?'selected':''}>30 phút</option></select>
-                    </label>
-                    <label class="trace-quiz-field full">Kiểu bài kiểm tra
-                        <select id="trace-quiz-type" name="type"><option value="multiple_choice" ${traceQuizLastConfig.type==='multiple_choice'?'selected':''}>Trắc nghiệm 4 lựa chọn</option><option value="flashcard" ${traceQuizLastConfig.type==='flashcard'?'selected':''}>Thẻ ghi nhớ kiểu Quizlet</option></select>
-                        <span class="trace-quiz-hint">Trắc nghiệm: chọn A/B/C/D và được chấm tự động. Thẻ ghi nhớ: lật thẻ xem mặt sau rồi đánh dấu “Đã nhớ” hoặc “Cần ôn”.</span>
+                    <label class="trace-quiz-field">Thời gian làm bài (5–60 phút)
+                        <input id="trace-quiz-minutes" type="number" inputmode="numeric" min="5" max="60" step="1" required value="${traceQuizEscapeAttr(cfg.minutes)}">
                     </label>
                 </form>
-                <div class="trace-quiz-actions"><button form="trace-quiz-config" type="submit" class="trace-quiz-btn primary" id="trace-quiz-create"><i class="fa fa-play"></i> Tạo đề &amp; bắt đầu</button><span class="trace-quiz-hint">Cần kết nối API trong mục “Cấu Hình API”.</span></div>
+                <div class="trace-quiz-actions"><button form="trace-quiz-config" type="submit" class="trace-quiz-btn primary" id="trace-quiz-create"><i class="fa fa-play"></i> Tạo đề &amp; bắt đầu</button><span class="trace-quiz-hint">Cần kết nối API trong mục “Cấu Hình API”. Đề nhiều câu sẽ được tạo theo từng đợt nên có thể mất ít phút.</span></div>
             </section>`;
-            const form = document.getElementById('trace-quiz-config');
+            const $q = id => document.getElementById(id);
+            const form = $q('trace-quiz-config');
+            const sourceSel = $q('trace-quiz-source');
+            const cbs = () => Array.from(traceQuizRoot.querySelectorAll('.trace-mistake-cb'));
+            const syncAll = () => {
+                const all = $q('trace-mistake-all');
+                if (!all) return;
+                const list = cbs(), n = list.filter(c => c.checked).length;
+                all.checked = list.length > 0 && n === list.length;
+                $q('trace-mistake-all-text').textContent = `Chọn tất cả (${n}/${list.length} lỗi đang chọn)`;
+            };
+            const syncSource = () => {
+                const m = sourceSel.value === 'mistakes';
+                $q('trace-quiz-topic-box').hidden = m;
+                $q('trace-quiz-mistake-box').hidden = !m;
+                $q('trace-quiz-topic').required = !m;
+            };
+            sourceSel.addEventListener('change', syncSource);
+            const allBox = $q('trace-mistake-all');
+            if (allBox) allBox.addEventListener('change', () => { cbs().forEach(c => { c.checked = allBox.checked; }); syncAll(); });
+            cbs().forEach(c => c.addEventListener('change', syncAll));
+            syncSource(); syncAll();
             form.addEventListener('submit', async event => {
                 event.preventDefault();
+                const list = cbs();
+                const ids = list.filter(c => c.checked).map(c => c.value);
                 traceQuizLastConfig = {
-                    topic: document.getElementById('trace-quiz-topic').value.trim(),
-                    level: document.getElementById('trace-quiz-level').value,
-                    difficulty: document.getElementById('trace-quiz-difficulty').value,
-                    count: document.getElementById('trace-quiz-count').value,
-                    minutes: document.getElementById('trace-quiz-minutes').value,
-                    type: document.getElementById('trace-quiz-type').value
+                    source: sourceSel.value,
+                    topic: $q('trace-quiz-topic').value.trim(),
+                    level: $q('trace-quiz-level').value,
+                    difficulty: $q('trace-quiz-difficulty').value,
+                    count: String(traceQuizClampInt($q('trace-quiz-count').value, 1, 50, 10)),
+                    minutes: String(traceQuizClampInt($q('trace-quiz-minutes').value, 5, 60, 10)),
+                    type: 'multiple_choice',
+                    selectedIds: (list.length && ids.length === list.length) ? null : ids
                 };
+                if (traceQuizLastConfig.source === 'mistakes') {
+                    if (!list.length) { traceRenderQuizSetup('Bạn chưa có lỗi sai nào được lưu. Hãy dùng “Sửa lỗi học tập” trước hoặc chọn nguồn “Theo chủ đề”.'); return; }
+                    if (!ids.length) { traceRenderQuizSetup('Hãy chọn ít nhất một lỗi sai để tạo đề.'); return; }
+                }
                 await traceQuizGenerate();
             });
         }
@@ -3215,38 +3341,77 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             return { title: String(obj.title || config.topic || 'Bài kiểm tra Trace AI'), questions };
         }
         async function traceQuizGenerate() {
-            if (!traceQuizLastConfig.topic) { traceRenderQuizSetup('Bạn hãy nhập chủ đề trước khi tạo đề.'); return; }
+            const cfg = traceQuizLastConfig;
+            const fromMistakes = cfg.source === 'mistakes';
+            let items = [];
+            if (fromMistakes) {
+                const all = traceQuizMistakeItems();
+                items = cfg.selectedIds ? all.filter(r => cfg.selectedIds.includes(r.id)) : all;
+                if (!items.length) { traceRenderQuizSetup('Không tìm thấy lỗi sai nào để tạo đề. Hãy dùng “Sửa lỗi học tập” trước.'); return; }
+            } else if (!cfg.topic) { traceRenderQuizSetup('Bạn hãy nhập chủ đề trước khi tạo đề.'); return; }
             if (!CONFIG.isConfigured) {
                 traceRenderQuizSetup('Bạn chưa kết nối API. Hãy bấm “Cấu Hình API”, lưu khóa rồi quay lại tạo đề.');
                 settingsBtn.click();
                 return;
             }
-            traceQuizRoot.innerHTML = `<section class="trace-quiz-panel"><div class="trace-quiz-loading"><div class="trace-quiz-spinner"></div><h3 style="font-weight:850;font-size:1.1rem">Đang tạo bài kiểm tra…</h3><p class="trace-quiz-hint" style="margin-top:7px">Trace AI đang soạn câu hỏi và kiểm tra định dạng. Bạn không cần gửi tin nhắn vào khung chat.</p></div></section>`;
-            const count = Number(traceQuizLastConfig.count);
-            const isFlash = traceQuizLastConfig.type === 'flashcard';
-            const outputSpec = isFlash
-                ? `Mỗi phần tử có các trường: question (mặt trước của thẻ), answer (mặt sau, định nghĩa/lời giải ngắn, chính xác), explanation (mẹo/giải thích tùy chọn).`
-                : `Mỗi phần tử có các trường: question (câu hỏi), options (mảng đúng 4 lựa chọn, chỉ có 1 đáp án đúng), answerIndex (số nguyên từ 0 đến 3, chỉ số đáp án đúng), explanation (giải thích ngắn).`;
-            const prompt = `Tạo một bài kiểm tra tương tác cho ứng dụng học tập bằng tiếng Việt.\nChủ đề: ${traceQuizLastConfig.topic}\nCấp học/trình độ: ${traceQuizLastConfig.level}\nĐộ khó: ${traceQuizLastConfig.difficulty}\nSố câu chính xác cần tạo: ${count}\nThời gian làm bài: ${traceQuizLastConfig.minutes} phút.\nLoại bài: ${isFlash ? 'thẻ ghi nhớ kiểu Quizlet' : 'trắc nghiệm 4 lựa chọn'}.\n${outputSpec}\nYêu cầu: nội dung chính xác, đúng cấp học, không lặp câu, không đưa đáp án vào câu hỏi. Chỉ trả về MỘT đối tượng JSON hợp lệ, không Markdown, không giải thích bên ngoài JSON, dạng: {"title":"Tiêu đề ngắn","questions":[...]} với ĐÚNG ${count} câu trong mảng questions. Không thêm lời giải thích bên ngoài JSON.`;
+            const count = Number(cfg.count);
+            const label = fromMistakes ? `Ôn tập từ ${items.length} lỗi sai` : cfg.topic;
+            traceQuizRoot.innerHTML = `<section class="trace-quiz-panel"><div class="trace-quiz-loading"><div class="trace-quiz-spinner"></div><h3 style="font-weight:850;font-size:1.1rem">Đang tạo bài kiểm tra…</h3><p class="trace-quiz-hint" id="trace-quiz-loading-text" style="margin-top:7px">Đang chuẩn bị…</p></div></section>`;
+            const perItem = Math.max(300, Math.floor(12000 / Math.max(1, items.length)));
+            const mistakeText = items.map((r, i) => `LỖI ${i + 1}\nĐề/yêu cầu: ${String(r.fullQuestion || r.question || '').slice(0, 500)}\nPhân tích lỗi và kiến thức đúng: ${String(r.detail || r.summary || '').slice(0, perItem)}`).join('\n\n---\n\n');
+            const context = fromMistakes
+                ? `Nguồn: các lỗi sai người học đã gặp (gồm đề bài và phân tích lỗi) dưới đây.\n\n${mistakeText}`
+                : `Chủ đề: ${cfg.topic}`;
+            const BATCH = 10, made = [], seen = new Set();
+            const maxAttempts = Math.ceil(count / BATCH) + 3;
+            let attempts = 0, lastError = null, title = '';
+            window.traceGenBusy = true;
             try {
                 tracePendingMode = 'quiz';
-                traceLastQuestion = `Bài kiểm tra: ${traceQuizLastConfig.topic}`;
-                const raw = await callAI(prompt, [], false);
-                const quiz = traceQuizParseResponse(raw, traceQuizLastConfig);
-                if (quiz.questions.length !== count) {
-                    throw new Error(`AI tạo được ${quiz.questions.length}/${count} câu. Bấm “Thử lại” để yêu cầu tạo đủ câu.`);
+                traceLastQuestion = `Bài kiểm tra: ${label}`;
+                while (made.length < count && attempts < maxAttempts) {
+                    attempts++;
+                    const need = Math.min(BATCH, count - made.length);
+                    const info = document.getElementById('trace-quiz-loading-text');
+                    if (info) info.textContent = `Đã có ${made.length}/${count} câu · đang soạn thêm ${need} câu…`;
+                    const avoid = made.length ? `\nCác câu đã có (KHÔNG lặp lại hoặc diễn đạt lại):\n${made.slice(-30).map(q => '- ' + q.question.replace(/\s+/g, ' ').slice(0, 90)).join('\n')}\n` : '';
+                    const rule = fromMistakes
+                        ? 'Mỗi câu phải kiểm tra lại đúng kiến thức/lỗi hiểu sai ở trên bằng một bài TƯƠNG TỰ (đổi số liệu, ngữ cảnh), không chép nguyên đề cũ; phân bổ đều giữa các lỗi; các đáp án sai phải phản ánh đúng những kiểu hiểu nhầm đã gặp.'
+                        : 'Nội dung phải chính xác và đúng cấp học.';
+                    const prompt = `Tạo câu hỏi trắc nghiệm bằng tiếng Việt cho ứng dụng học tập.\n${context}\nCấp học/trình độ: ${cfg.level}\nĐộ khó: ${cfg.difficulty}\nHãy tạo ĐÚNG ${need} câu mới. Mỗi câu có các trường: question (câu hỏi), options (mảng đúng 4 lựa chọn, chỉ 1 đáp án đúng), answerIndex (số nguyên 0 đến 3, chỉ số đáp án đúng), explanation (giải thích ngắn).\n${rule}\nKhông đưa đáp án vào câu hỏi; đáp án đúng nên phân bố ngẫu nhiên giữa các vị trí A–D.${avoid}\nChỉ trả về MỘT đối tượng JSON hợp lệ, không Markdown, không chữ bên ngoài JSON, dạng: {"title":"Tiêu đề ngắn","questions":[...]} với ĐÚNG ${need} câu trong mảng questions.`;
+                    try {
+                        const raw = await callAI(prompt, [], false);
+                        const parsed = traceQuizParseResponse(raw, { ...cfg, topic: label });
+                        if (!title) title = parsed.title;
+                        for (const q of parsed.questions) {
+                            const key = q.question.toLowerCase().replace(/\s+/g, ' ').trim();
+                            if (seen.has(key)) continue;
+                            seen.add(key);
+                            made.push(q);
+                            if (made.length >= count) break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        console.error('Trace AI quiz batch:', error);
+                    }
                 }
+                if (!made.length) throw lastError || new Error('Không thể tạo đề. Kiểm tra kết nối API và thử lại.');
+                if (made.length < count) showToast(`AI chỉ tạo được ${made.length}/${count} câu. Bạn vẫn có thể làm bài hoặc tạo lại.`, false);
+                const total = made.length;
                 traceQuizState = {
-                    quiz, config: {...traceQuizLastConfig}, current: 0,
-                    selected: Array(count).fill(null), checked: Array(count).fill(false),
-                    flashRevealed: Array(count).fill(false), flashKnown: Array(count).fill(null),
-                    remaining: Number(traceQuizLastConfig.minutes) * 60, startedAt: Date.now(), finished: false
+                    quiz: { title: fromMistakes ? 'Ôn tập từ lỗi sai' : (title || label), questions: made.slice(0, count) },
+                    config: { ...cfg, topic: label, count: String(total) }, current: 0,
+                    selected: Array(total).fill(null), checked: Array(total).fill(false),
+                    flashRevealed: Array(total).fill(false), flashKnown: Array(total).fill(null),
+                    remaining: Number(cfg.minutes) * 60, startedAt: Date.now(), finished: false
                 };
                 traceQuizRenderQuestion();
                 traceQuizStartTimer();
             } catch (error) {
                 console.error('Trace AI quiz:', error);
                 traceRenderQuizSetup(error.message || 'Không thể tạo đề. Kiểm tra kết nối API và thử lại.');
+            } finally {
+                window.traceGenBusy = false;
             }
         }
         function traceQuizClockText(seconds) {
@@ -3341,6 +3506,172 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             traceQuizRoot.innerHTML = `<section class="trace-quiz-panel"><div class="trace-quiz-score"><div class="trace-quiz-kicker">${timeUp ? 'Hết thời gian' : 'Hoàn thành bài kiểm tra'}</div><div class="score-number">${correct}/${total}</div><h3>${percent >= 80 ? 'Làm tốt lắm! 🎉' : percent >= 50 ? 'Bạn đang tiến bộ! 💪' : 'Cùng xem lại kiến thức nhé 🌱'}</h3><p>${traceQuizEscape(st.config.topic)} · ${traceQuizEscape(st.config.level)} · ${traceQuizEscape(st.config.difficulty)}<br>${percent}% chính xác · ${attempted}/${total} câu đã trả lời<br>${traceQuizEscape(summary)}</p><div class="trace-quiz-actions" style="justify-content:center;padding:0"><button type="button" class="trace-quiz-btn primary" data-quiz-action="restart">Tạo/làm đề mới</button><button type="button" class="trace-quiz-btn" data-quiz-action="progress">Xem lộ trình</button></div><div style="margin:18px auto 0;max-width:560px;text-align:left"><h4 style="font-weight:850;margin-bottom:8px">Tóm tắt đáp án</h4>${st.quiz.questions.map((q,i)=>{const ok=st.config.type==='flashcard'?st.flashKnown[i]===true:st.selected[i]===q.answerIndex;const answer=st.config.type==='flashcard'?q.answer:`${String.fromCharCode(65+q.answerIndex)}. ${q.options[q.answerIndex]}`;return `<div style="padding:10px 0;border-top:1px solid var(--sk-border,var(--tc-border,#e2e8f0));font-size:.82rem;line-height:1.5"><strong>${i+1}. ${ok?'✅':'↻'} ${traceQuizEscape(q.question)}</strong><div style="margin-top:4px;color:var(--sk-muted,var(--tc-muted,#64748b))">Đáp án: ${traceQuizEscape(answer)}${q.explanation?' · '+traceQuizEscape(q.explanation):''}</div></div>`}).join('')}</div></div></section>`;
             traceQuizRoot.querySelector('[data-quiz-action="restart"]').addEventListener('click', () => traceRenderQuizSetup());
             traceQuizRoot.querySelector('[data-quiz-action="progress"]').addEventListener('click', () => traceSetMode('progress'));
+        }
+
+        // ==================== GHI NHỚ: SƠ ĐỒ TƯ DUY / FLASHCARD / TÓM LƯỢC ====================
+        const traceMemoRoot = document.createElement('section');
+        traceMemoRoot.id = 'trace-memo-root';
+        traceMemoRoot.className = 'trace-quiz-shell';
+        traceMemoRoot.hidden = true;
+        chatCard.parentNode.insertBefore(traceMemoRoot, chatCard);
+        const traceMemoImgRow = document.getElementById('mm-img-row');
+        const traceMemoDecks = {};
+        let traceMemoBuilt = false;
+        let traceMemoDeckSeq = 0;
+        window.traceMemoSyncImg = function () {
+            const cb = document.getElementById('memo-opt-mindmap');
+            traceMemoImgRow.hidden = !(traceMode === 'memo' && cb && cb.checked);
+        };
+        function traceMemoEnsure() {
+            if (traceMemoBuilt) { window.traceMemoSyncImg(); return; }
+            traceMemoBuilt = true;
+            traceMemoRoot.innerHTML = `<section class="trace-quiz-panel">
+                <header class="trace-quiz-head"><div class="trace-quiz-kicker">Trace AI · Ghi nhớ</div><h3>🧠 Biến bài học thành công cụ ghi nhớ</h3><p>Nhập chủ đề hoặc dán nội dung bài học, rồi chọn một hoặc nhiều dạng ghi nhớ cho cùng một chủ đề.</p></header>
+                <form id="trace-memo-form" class="trace-quiz-form">
+                    <label class="trace-quiz-field full">Chủ đề hoặc nội dung bài học
+                        <textarea id="trace-memo-topic" rows="4" maxlength="6000" required placeholder="Ví dụ: Chu trình nước; hoặc dán đoạn bài học cần ghi nhớ…"></textarea>
+                    </label>
+                    <div class="trace-quiz-field full">Dạng ghi nhớ (chọn một hoặc nhiều)
+                        <div class="trace-memo-opts">
+                            <label class="trace-memo-opt"><input type="checkbox" id="memo-opt-mindmap" checked><span><b>🌳 Sơ đồ tư duy</b><small>Cây ý chính, kéo thả và phóng to được</small></span></label>
+                            <label class="trace-memo-opt"><input type="checkbox" id="memo-opt-flash"><span><b>🃏 Flashcard</b><small>Thẻ hỏi – đáp để lật và tự kiểm tra</small></span></label>
+                            <label class="trace-memo-opt"><input type="checkbox" id="memo-opt-summary"><span><b>📌 Tóm lược ý chính</b><small>Các ý quan trọng nhất, ngắn gọn dễ nhớ</small></span></label>
+                        </div>
+                    </div>
+                    <div class="trace-quiz-field full" id="trace-memo-img-slot"></div>
+                    <label class="trace-quiz-field" id="trace-memo-count-wrap" hidden>Số flashcard (3–30)
+                        <input id="trace-memo-count" type="number" inputmode="numeric" min="3" max="30" step="1" value="10">
+                    </label>
+                </form>
+                <div class="trace-quiz-actions"><button form="trace-memo-form" type="submit" class="trace-quiz-btn primary" id="trace-memo-go"><i class="fa fa-play"></i> Tạo tài liệu ghi nhớ</button><span class="trace-quiz-hint">Cần kết nối API trong mục “Cấu Hình API”.</span></div>
+                <div id="trace-memo-results" class="trace-memo-results"></div>
+            </section>`;
+            document.getElementById('trace-memo-img-slot').appendChild(traceMemoImgRow);
+            const syncOpts = () => {
+                document.getElementById('trace-memo-count-wrap').hidden = !document.getElementById('memo-opt-flash').checked;
+                window.traceMemoSyncImg();
+            };
+            ['memo-opt-mindmap', 'memo-opt-flash', 'memo-opt-summary'].forEach(id => document.getElementById(id).addEventListener('change', syncOpts));
+            syncOpts();
+            document.getElementById('trace-memo-form').addEventListener('submit', event => { event.preventDefault(); traceMemoGenerate(); });
+        }
+        function traceMemoParseJson(raw) {
+            const text = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+            try { return JSON.parse(text); } catch (_) {}
+            const a = text.indexOf('{'), b = text.lastIndexOf('}');
+            if (a >= 0 && b > a) { try { return JSON.parse(text.slice(a, b + 1)); } catch (_) {} }
+            throw new Error('AI chưa trả về dữ liệu hợp lệ. Hãy thử lại.');
+        }
+        function traceMemoDeckHtml(id) {
+            const d = traceMemoDecks[id];
+            const c = d.cards[d.order[d.i]];
+            return `<div class="trace-fc-meta">Thẻ ${d.i + 1} / ${d.order.length}</div>
+                <div class="trace-fc-card ${d.flip ? 'back' : ''}" role="button" tabindex="0" data-fc-act="flip" data-deck="${id}" aria-label="Lật thẻ"><span class="trace-fc-side">${d.flip ? 'MẶT SAU · ĐÁP ÁN' : 'MẶT TRƯỚC · CÂU HỎI'}</span><div class="trace-fc-text">${formatContent(d.flip ? c.back : c.front)}</div><span class="trace-fc-tip">Chạm vào thẻ để lật</span></div>
+                <div class="trace-fc-nav"><button type="button" class="trace-quiz-btn" data-fc-act="prev" data-deck="${id}" ${d.i === 0 ? 'disabled' : ''}>← Trước</button><button type="button" class="trace-quiz-btn primary" data-fc-act="flip" data-deck="${id}">🔄 Lật thẻ</button><button type="button" class="trace-quiz-btn" data-fc-act="next" data-deck="${id}" ${d.i === d.order.length - 1 ? 'disabled' : ''}>Sau →</button><button type="button" class="trace-quiz-btn" data-fc-act="shuffle" data-deck="${id}">🔀 Xáo trộn</button></div>`;
+        }
+        function traceMemoDeckAction(button) {
+            const id = button.dataset.deck, d = traceMemoDecks[id];
+            if (!d) return;
+            const act = button.dataset.fcAct;
+            if (act === 'flip') d.flip = !d.flip;
+            else if (act === 'next' && d.i < d.order.length - 1) { d.i++; d.flip = false; }
+            else if (act === 'prev' && d.i > 0) { d.i--; d.flip = false; }
+            else if (act === 'shuffle') {
+                for (let k = d.order.length - 1; k > 0; k--) { const r = Math.floor(Math.random() * (k + 1)); [d.order[k], d.order[r]] = [d.order[r], d.order[k]]; }
+                d.i = 0; d.flip = false;
+            }
+            const box = document.getElementById('trace-fc-' + id);
+            if (box) box.innerHTML = traceMemoDeckHtml(id);
+        }
+        traceMemoRoot.addEventListener('click', async event => {
+            const fc = event.target.closest('[data-fc-act]');
+            if (fc) { traceMemoDeckAction(fc); return; }
+            const copy = event.target.closest('.trace-map-copy');
+            if (!copy) return;
+            const value = copy.closest('.trace-mindmap')?.querySelector('.trace-map-source')?.value || '';
+            try { await navigator.clipboard.writeText(value); copy.textContent = '✓ Đã sao chép'; }
+            catch (_) { showToast('Không thể sao chép tự động trên trình duyệt này.'); }
+        });
+        traceMemoRoot.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            const fc = event.target.closest('.trace-fc-card[data-fc-act]');
+            if (fc) { event.preventDefault(); traceMemoDeckAction(fc); }
+        });
+        async function traceMemoMakeMindmap(topic) {
+            const prompt = `${TRACE_MODE_META.mindmap.instruction}\n\nChủ đề hoặc nội dung cần ghi nhớ:\n${topic}`;
+            const raw = await callAI(prompt, [], false);
+            const m = raw.match(/```\s*mindmap\s*\n([\s\S]*?)```/i);
+            let outline = m ? m[1] : raw.replace(/```[a-z]*\n?/gi, '').split('\n').filter(r => r.trim()).join('\n');
+            const root = traceParseMindmap(outline);
+            if (!root || !root.children.length) throw new Error('AI chưa tạo được sơ đồ. Hãy thử lại.');
+            const extra = m ? raw.replace(m[0], '').trim() : '';
+            return { html: traceRenderMindmap(outline) + (extra ? `<div class="trace-memo-extra">${formatContent(extra)}</div>` : ''), outline };
+        }
+        async function traceMemoMakeFlash(topic, n) {
+            const prompt = `Tạo ĐÚNG ${n} flashcard bằng tiếng Việt để ghi nhớ nội dung sau. Mỗi thẻ có: front (câu hỏi hoặc thuật ngữ ngắn) và back (đáp án/định nghĩa chính xác, tối đa 2–3 câu). Bao quát các ý quan trọng, không lặp lại. Công thức toán viết bằng LaTeX trong $...$ (nhớ escape dấu gạch chéo ngược trong JSON).\nChỉ trả về MỘT đối tượng JSON hợp lệ, không Markdown, dạng: {"title":"Tiêu đề ngắn","cards":[{"front":"...","back":"..."}]}\n\nNội dung:\n${topic}`;
+            const obj = traceMemoParseJson(await callAI(prompt, [], false));
+            const list = Array.isArray(obj) ? obj : (obj.cards || obj.questions || []);
+            const cards = list.map(c => ({ front: String(c.front ?? c.question ?? '').trim(), back: String(c.back ?? c.answer ?? '').trim() })).filter(c => c.front && c.back).slice(0, n);
+            if (!cards.length) throw new Error('AI chưa tạo được flashcard. Hãy thử lại.');
+            const id = 'd' + (++traceMemoDeckSeq);
+            traceMemoDecks[id] = { cards, order: cards.map((_, i) => i), i: 0, flip: false };
+            return { html: `<div id="trace-fc-${id}">${traceMemoDeckHtml(id)}</div>`, count: cards.length };
+        }
+        async function traceMemoMakeSummary(topic) {
+            const prompt = `Hãy tóm lược ý chính bằng tiếng Việt cho nội dung sau để học sinh dễ ghi nhớ. Trình bày 5–8 ý quan trọng nhất dạng gạch đầu dòng ngắn (mỗi dòng bắt đầu bằng "- "), in đậm cụm từ khóa bằng **...**, cuối cùng thêm một dòng bắt đầu bằng "Cần nhớ nhất:" nêu điều cốt lõi. Không dùng tiêu đề lớn, không dài dòng.\n\nNội dung:\n${topic}`;
+            const raw = await callAI(prompt, [], false);
+            return { html: `<div class="trace-memo-summary">${formatContent(raw)}</div>` };
+        }
+        async function traceMemoGenerate() {
+            if (window.traceGenBusy) return;
+            const topic = document.getElementById('trace-memo-topic').value.trim();
+            const want = [];
+            if (document.getElementById('memo-opt-mindmap').checked) want.push('mindmap');
+            if (document.getElementById('memo-opt-flash').checked) want.push('flash');
+            if (document.getElementById('memo-opt-summary').checked) want.push('summary');
+            if (!topic) { showToast('Hãy nhập chủ đề hoặc nội dung cần ghi nhớ.'); return; }
+            if (!want.length) { showToast('Hãy chọn ít nhất một dạng ghi nhớ.'); return; }
+            if (!CONFIG.isConfigured) { showToast('Hãy cấu hình API trước (nút "Cấu Hình API" ở góc trên).'); settingsBtn.click(); return; }
+            const n = Math.min(30, Math.max(3, Math.round(Number(document.getElementById('trace-memo-count').value)) || 10));
+            const TITLES = { mindmap: '🌳 Sơ đồ tư duy', flash: '🃏 Flashcard', summary: '📌 Tóm lược ý chính' };
+            const results = document.getElementById('trace-memo-results');
+            const goBtn = document.getElementById('trace-memo-go');
+            results.innerHTML = '';
+            goBtn.disabled = true;
+            window.traceGenBusy = true;
+            const okNames = []; let outline = '';
+            try {
+                tracePendingMode = 'memo';
+                traceLastQuestion = 'Ghi nhớ: ' + topic.slice(0, 120);
+                for (const kind of want) {
+                    const sec = document.createElement('section');
+                    sec.className = 'trace-memo-section';
+                    sec.innerHTML = `<h4>${TITLES[kind]}</h4><div class="trace-memo-body"><div class="trace-quiz-loading" style="padding:18px"><div class="trace-quiz-spinner"></div><span class="trace-quiz-hint">Đang tạo…</span></div></div>`;
+                    results.appendChild(sec);
+                    const body = sec.querySelector('.trace-memo-body');
+                    try {
+                        const out = kind === 'mindmap' ? await traceMemoMakeMindmap(topic)
+                            : kind === 'flash' ? await traceMemoMakeFlash(topic, n)
+                            : await traceMemoMakeSummary(topic);
+                        body.innerHTML = out.html;
+                        okNames.push(TITLES[kind].replace(/^\S+\s/, ''));
+                        if (out.outline) outline = out.outline;
+                    } catch (error) {
+                        console.error('Trace AI memo:', error);
+                        body.innerHTML = `<p class="trace-memo-err">❌ ${traceQuizEscape(error.message || 'Không thể tạo nội dung này.')}</p>`;
+                    }
+                }
+                if (okNames.length) {
+                    const rec = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), mode: 'memo', label: 'Ghi nhớ', question: topic.slice(0, 180), summary: okNames.join(' + '), date: Date.now() };
+                    if (outline) rec.outline = outline.slice(0, 6000);
+                    traceRecords.push(rec);
+                    traceRecords = traceRecords.slice(-60);
+                    traceSaveRecords();
+                }
+            } finally {
+                window.traceGenBusy = false;
+                goBtn.disabled = false;
+            }
         }
 
         // Bật đúng chế độ đã chọn lần trước. API gốc vẫn chạy qua cùng các hàm và endpoint như trước.
@@ -3948,7 +4279,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { const el = document.querySelector('.tmx.tm-full'); if (el) full(el, false); } });
   const mmRow = document.getElementById('mm-img-row'), mmBox = document.getElementById('mm-img-toggle');
   mmBox.checked = MI.on;
-  const syncRow = () => { mmRow.hidden = traceMode !== 'mindmap'; };
+  const syncRow = () => { if (window.traceMemoSyncImg) window.traceMemoSyncImg(); else mmRow.hidden = true; };
   mmBox.addEventListener('change', () => {
     MI.on = mmBox.checked;
     store.set('mm_img', MI.on ? '1' : '0');
@@ -4176,9 +4507,8 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   const $ = id => document.getElementById(id);
   const box = $('pomo');
   if (!box) return;
-  const BREAK = 300, KEY = 'pomo_log', LEN_KEY = 'pomo_len';
-  let FOCUS = 1500;
-  const el = { len: $('pomo-len'), set: document.querySelector('.pomo-set'), time: $('pomo-time'), label: $('pomo-label'), go: $('pomo-go'), stop: $('pomo-stop'), today: $('pomo-today'), bar: $('pomo-bar') };
+  const FOCUS = 1500, BREAK = 300, KEY = 'pomo_log';
+  const el = { time: $('pomo-time'), label: $('pomo-label'), go: $('pomo-go'), stop: $('pomo-stop'), today: $('pomo-today'), bar: $('pomo-bar') };
   const baseTitle = document.title;
   const p2 = n => String(n).padStart(2, '0');
   const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
@@ -4189,9 +4519,6 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     const a = JSON.parse(store.get(KEY) || '[]');
     if (Array.isArray(a)) log = a.filter(x => x && typeof x.s === 'number' && typeof x.sec === 'number');
   } catch (e) {}
-  const clampLen = v => { const x = Math.round(Number(v)); return String(v == null ? '' : v).trim() === '' || isNaN(x) ? 25 : Math.min(180, Math.max(1, x)); };
-  FOCUS = clampLen(store.get(LEN_KEY)) * 60;
-  el.len.value = FOCUS / 60;
   const save = () => store.set(KEY, JSON.stringify(log.slice(-400)));
   const total = () => (S.mode === 'focus' ? FOCUS : BREAK);
   const used = () => S.acc + (S.run ? Date.now() - S.t0 : 0);
@@ -4258,12 +4585,10 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     el.time.textContent = p2(Math.floor(t / 60)) + ':' + p2(t % 60);
     box.dataset.mode = S.mode;
     box.classList.toggle('running', S.run);
-    el.label.textContent = S.mode === 'break' ? (S.run ? 'Nghỉ ngơi' : 'Giờ nghỉ 5 phút') : S.run ? 'Đang tập trung' : (S.acc > 0 ? 'Tạm dừng' : '');
-    el.set.classList.toggle('off', S.mode === 'break');
-    el.len.disabled = S.run || S.acc > 0;
+    el.label.textContent = S.mode === 'break' ? (S.run ? 'Nghỉ ngơi' : 'Giờ nghỉ 5 phút') : S.run ? 'Đang tập trung' : (S.acc > 0 ? 'Tạm dừng' : 'Phiên 25 phút');
     el.go.textContent = S.run ? '⏸' : '▶';
     el.go.title = S.run ? 'Tạm dừng' : (S.acc > 0 ? 'Tiếp tục' : 'Bắt đầu');
-    el.stop.hidden = !(S.run || S.acc > 0 || S.mode === 'break');
+    el.stop.hidden = !(S.run || S.acc > 0);
     el.bar.style.width = Math.min(100, used() / (total() * 10)) + '%';
     const s = stats()[dayKey(Date.now())];
     el.today.textContent = s ? 'Hôm nay: ' + mins(s.sec) + ' phút · ' + s.n + ' phiên' : 'Hôm nay: chưa học';
@@ -4280,7 +4605,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     if (wasFocus) {
       addLog(start, FOCUS, true);
       S.mode = 'break';
-      showToast('Hết ' + FOCUS / 60 + ' phút! Đã lưu phiên học lên lịch. Nghỉ 5 phút nhé.', false);
+      showToast('Hết 25 phút! Đã lưu phiên học lên lịch. Nghỉ 5 phút nhé.', false);
     } else {
       S.mode = 'focus';
       showToast('Hết giờ nghỉ, sẵn sàng cho phiên tiếp theo.', false);
@@ -4289,17 +4614,6 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   }
 
   function tick() { if (left() <= 0) finish(); else render(); }
-
-  const applyLen = () => {
-    const m = clampLen(el.len.value);
-    el.len.value = m;
-    if (S.run || S.acc > 0 || S.mode !== 'focus') return;
-    FOCUS = m * 60;
-    store.set(LEN_KEY, String(m));
-    render();
-  };
-  el.len.addEventListener('change', applyLen);
-  el.len.addEventListener('keydown', e => { if (e.key === 'Enter') { applyLen(); el.len.blur(); } });
 
   el.go.addEventListener('click', () => {
     if (!S.run) {
