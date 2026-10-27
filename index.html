@@ -987,6 +987,11 @@ html[data-theme="dark"] .sp-shell{--ok:#4ade80;--bad:#f87171;--wn:#fbbf24}
 #sp-mic.listening{background:var(--bad);animation:spp 1.1s infinite}
 #sp-mic:disabled{opacity:.45;cursor:not-allowed;animation:none}
 .sp-interim{min-height:1.4em;margin-top:6px;font-size:.85rem;color:var(--sk-muted,#64748b);font-style:italic}
+.sp-tag{display:block;margin-top:6px;font-size:.72rem;color:var(--sk-muted,#64748b)}
+.sp-rt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.sp-rt input{flex:1;min-width:160px;padding:7px 9px;border-radius:10px;border:1px solid var(--sk-border,#e2e8f0);background:var(--sk-surface2,#f1f5f9);color:var(--sk-text,#1e293b);font-size:.88rem}
+.sp-rt button{padding:5px 10px;border-radius:8px;font-size:.76rem;font-weight:800;border:1px solid var(--sk-border,#cbd5e1);background:var(--sk-surface,#fff);color:var(--sk-text,#1e293b)}
+.sp-rep{padding:10px 12px;border:1px solid var(--sk-border,#e2e8f0);border-radius:12px;margin-bottom:8px;font-size:.88rem;line-height:1.55}
 </style>
 <style id="trace-testlab-css">
 .tl-shell{--wn:#d97706}
@@ -1056,6 +1061,13 @@ html:not([data-skin]) #trace-particle-canvas,html:not([data-skin]) .trace-visual
 .trace-visual-btn:focus-visible{outline:2px solid var(--sk-accent,#2563eb);outline-offset:2px}
 @media(max-width:600px){.trace-visual-choice{width:100%}.trace-visual-title{width:100%}.trace-visual-btn{flex:1;white-space:nowrap}}
 @media(prefers-reduced-motion:reduce){#trace-particle-canvas{opacity:.8}}
+</style>
+<style id="trace-speak-call-css">
+.sp-vofb{position:absolute;z-index:5;left:50%;transform:translateX(-50%);top:58px;width:min(560px,92vw);max-height:36vh;overflow:auto;padding:11px 14px;border-radius:16px;font-size:.88rem;line-height:1.55;text-align:left;background:var(--sk-surface,#fff);color:var(--sk-text,#1e293b);border:1px solid #f59e0b;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.sp-vofb[hidden]{display:none}
+.sp-vofb.done{border-color:var(--sk-border,#cbd5e1)}
+.sp-vofb .m{color:#16a34a}.sp-vofb .ft{margin-top:6px;font-size:.78rem;opacity:.75}
+.sp-vofb button{margin:6px 6px 0 0;padding:3px 11px;border-radius:9px;font-size:.78rem;font-weight:800;border:1px solid var(--sk-border,#cbd5e1);background:var(--sk-surface2,#f1f5f9);color:var(--sk-text,#1e293b)}
 </style>
 </head>
 <body class="font-sans text-neutral-800 min-h-screen flex flex-col scroll-smooth">
@@ -1264,7 +1276,7 @@ html:not([data-skin]) #trace-particle-canvas,html:not([data-skin]) .trace-visual
             <div class="mode-tabs" role="tablist">
                 <button type="button" id="tab-qa" data-trace-mode="qa" class="mode-tab active" title="Hỏi đáp kiến thức"><i class="fa fa-lightbulb-o"></i><span>Hỏi đáp</span></button>
                 <button type="button" id="tab-en" data-trace-mode="en" class="mode-tab" title="Luyện tiếng Anh"><i class="fa fa-comments-o"></i><span>Tiếng Anh</span></button>
-                <button type="button" id="tab-code" class="mode-tab" aria-expanded="false" title="Code: Sửa lỗi code, Hidden Test Lab, Code Replay"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-.12em"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></i><span>Code</span></button>
+                <button type="button" id="tab-code" class="mode-tab" aria-expanded="false" title="Code: Giải bài tập, Debug, Giải thích code, Hidden Test Lab, Code Replay"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-.12em"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></i><span>Code</span></button>
                 <button type="button" id="tab-debug" data-trace-mode="debug" class="mode-tab" style="display:none" aria-hidden="true" tabindex="-1" title="Sửa lỗi code"><i class="fa fa-bug"></i><span>Sửa code</span></button>
                 <button type="button" id="tab-replay" data-trace-mode="replay" class="mode-tab" style="display:none" aria-hidden="true" tabindex="-1" title="Code Replay: mô phỏng code từng bước"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:inline-block;vertical-align:-.12em"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg></i><span>Code Replay</span></button>
                 <button type="button" id="tab-learnfix" data-trace-mode="learnfix" class="mode-tab" title="Phân tích lỗi sai trong học tập"><i class="fa fa-book"></i><span>Sửa lỗi học tập</span></button>
@@ -1276,10 +1288,13 @@ html:not([data-skin]) #trace-particle-canvas,html:not([data-skin]) .trace-visual
                 <button type="button" id="tab-themes" class="mode-tab" title="Giao diện &amp; theme"><i class="fa fa-paint-brush"></i><span>Giao diện</span></button>
             </div>
             <div id="en-hub" class="we-tabs" role="tablist" aria-label="Chế độ luyện tiếng Anh" hidden>
-                <button type="button" data-sub="en">💬 Hội thoại tiếng Anh</button><button type="button" data-sub="speak">🎤 Speak &amp; Repair</button><button type="button" data-sub="writing">✍️ Writing Evolution</button>
+                <button type="button" data-sub="speak">🗣️ Hội thoại &amp; Sửa lỗi</button><button type="button" data-sub="writing">✍️ Writing Evolution</button>
             </div>
             <div id="code-hub" class="we-tabs" role="tablist" aria-label="Chế độ Code" hidden>
-                <button type="button" role="tab" data-sub="debug">🔍 Sửa lỗi code</button><button type="button" role="tab" data-sub="testlab">🧪 Hidden Test Lab</button><button type="button" role="tab" data-sub="replay">▶ Code Replay</button>
+                <button type="button" role="tab" data-sub="debug">💻 Trợ lý code</button><button type="button" role="tab" data-sub="testlab">🧪 Hidden Test Lab</button><button type="button" role="tab" data-sub="replay">▶ Code Replay</button>
+            </div>
+            <div id="code-assist" class="we-tabs" role="tablist" aria-label="Chế độ Trợ lý code" hidden>
+                <button type="button" role="tab" data-assist="solve">📝 Giải bài tập code</button><button type="button" role="tab" data-assist="debug">🐞 Debug code</button><button type="button" role="tab" data-assist="explain">📖 Giải thích code</button>
             </div>
             <section id="trace-mode-info" class="trace-mode-info" aria-live="polite">
                 <div class="trace-mode-info-head"><span id="trace-mode-emoji">💬</span><div><strong id="trace-mode-label">Hỏi đáp kiến thức</strong><p id="trace-mode-description">Hỏi bằng tiếng Việt, tải ảnh bài tập hoặc bấm micro để nói.</p></div></div>
@@ -1398,21 +1413,24 @@ POST {địa chỉ}/run     ←  {"language":"cpp|python","source":"...","stdin"
   </div>
   <div class="cr-card" id="we-body"></div>
 </section>
-            <section id="trace-speak-root" class="sp-shell" hidden aria-label="Speak & Repair">
-  <div class="we-note"><b>Speak &amp; Repair</b> — hội thoại tiếng Anh nhiều lượt: bạn nói, AI đáp lại như người đối thoại, góp ý lỗi đáng chú ý rồi mời bạn nói lại. <b>Lưu ý:</b> trình duyệt chỉ chuyển giọng nói thành chữ; Trace AI phân tích <b>nội dung chữ</b> chứ <b>không chấm phát âm</b>. Chữ hiện ra có thể sai do nhận dạng — bạn có thể tắt tự động gửi để kiểm tra trước. Micro chỉ bật khi bạn bấm nút.</div>
+            <section id="trace-speak-root" class="sp-shell" hidden aria-label="Hội thoại và Sửa lỗi">
+  <div class="we-note"><b>Hội thoại &amp; Sửa lỗi</b> — trò chuyện tiếng Anh nhiều lượt (có thể nhập vai, ví dụ đặt phòng khách sạn): AI phản ứng với đúng điều bạn vừa nói, tiếp tục cuộc trò chuyện tự nhiên, rồi góp ý lỗi và cho bạn thử lại. Nếu bạn lặp lại một kiểu lỗi, AI sẽ đổi tình huống kế tiếp để bạn tự dùng lại cấu trúc đó. <b>Lưu ý:</b> trình duyệt chỉ chuyển giọng nói thành chữ; Trace AI phân tích <b>nội dung chữ</b> chứ <b>không chấm phát âm</b>. Chữ hiện ra có thể sai do nhận dạng — bạn có thể tắt tự động gửi để kiểm tra trước. Micro chỉ bật khi bạn bấm nút.</div>
   <div id="sp-support" class="we-msg" role="status"></div>
   <div class="cr-card" id="sp-setup">
+    <p class="we-empty" style="margin:0 0 8px">📞 <b>Cuộc gọi</b>: dùng màn hình quả cầu như khi trò chuyện bằng giọng nói — micro chỉ bật sau khi bạn bấm “Bắt đầu cuộc gọi”, có nút tắt/bật micro và nút kết thúc để xem báo cáo. “Luyện bằng chữ” dành cho trình duyệt không hỗ trợ nhận diện giọng nói.</p>
     <div class="sp-opts">
-      <label>Chủ đề <select id="sp-topic"><option value="daily">Giao tiếp hằng ngày</option><option value="school">Trường học</option><option value="hobbies">Sở thích</option><option value="travel">Du lịch</option><option value="exam">Luyện thi</option></select></label>
+      <label>Chủ đề <select id="sp-topic"><option value="free">💬 Tự do (nói chuyện như với người bản xứ)</option><option value="hotel">Đặt phòng khách sạn (nhập vai)</option><option value="restaurant">Gọi món nhà hàng (nhập vai)</option><option value="shopping">Mua sắm (nhập vai)</option><option value="interview">Phỏng vấn (nhập vai)</option><option value="daily">Giao tiếp hằng ngày</option><option value="school">Trường học</option><option value="hobbies">Sở thích</option><option value="travel">Du lịch</option><option value="exam">Luyện thi</option></select></label>
       <label>Trình độ <select id="sp-level"><option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option><option>C2</option></select></label>
       <label>Tốc độ đọc <select id="sp-rate"><option value="0.75">Chậm</option><option value="1" selected>Bình thường</option><option value="1.25">Nhanh</option></select></label>
+      <label>Xem góp ý <select id="sp-fbmode"><option value="now">Ngay sau mỗi lượt</option><option value="end">Cuối buổi</option></select></label>
       <label><input type="checkbox" id="sp-auto" checked> Tự gửi sau khi nói xong</label>
-      <button type="button" id="sp-start" class="trace-quiz-btn primary">▶ Bắt đầu phiên</button>
+      <button type="button" id="sp-call" class="trace-quiz-btn primary" title="Micro chỉ bật sau khi bạn bấm nút này">📞 Bắt đầu cuộc gọi (nói)</button>
+      <button type="button" id="sp-start" class="trace-quiz-btn">⌨ Luyện bằng chữ</button>
     </div>
   </div>
   <div class="cr-card" id="sp-sess" hidden>
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span id="sp-pill" class="sp-pill"><i></i><span id="sp-ptxt">Sẵn sàng</span></span>
+      <span id="sp-pill" class="sp-pill"><i></i><span id="sp-ptxt">Sẵn sàng</span></span> <small id="sp-note" style="color:var(--sk-muted,#64748b)"></small>
       <span><button type="button" id="sp-stopsay" class="trace-quiz-btn" style="padding:5px 10px;font-size:.78rem" hidden>⏹ Dừng đọc</button>
       <button type="button" id="sp-end" class="trace-quiz-btn" style="padding:5px 10px;font-size:.78rem">■ Kết thúc &amp; xem báo cáo</button></span>
     </div>
@@ -3236,7 +3254,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             replay: { label: 'Code Replay', emoji: '▶\uFE0E', title: 'Trace AI — Code Replay', subtitle: 'Mô phỏng code C++/Python từng bước để quan sát biến, điều kiện, vòng lặp và đầu ra. Đây là mô phỏng, không phải chạy code thật.', placeholder: '', prompts: [], instruction: '' },
             testlab: { label: 'Hidden Test Lab', emoji: '🧪', title: 'Trace AI — Hidden Test Lab', subtitle: 'Kiểm tra code C++/Python trên nhiều bộ test (thông thường, biên, đặc biệt) để tìm lỗi thuật toán. Chỉ báo PASS/FAIL khi code thật sự được chạy.', placeholder: '', prompts: [], instruction: '' },
             writing: { label: 'Writing Evolution', emoji: '✍️', title: 'Trace AI — Writing Evolution', subtitle: 'Theo dõi lỗi viết tiếng Anh lặp lại, luyện tập đúng lỗi và xem tiến bộ theo thời gian.', placeholder: '', prompts: [], instruction: '' },
-            speak: { label: 'Speak & Repair', emoji: '🎤', title: 'Trace AI — Speak & Repair', subtitle: 'Hội thoại tiếng Anh nhiều lượt: nói, nhận gợi ý, rồi nói lại. Chỉ phân tích nội dung chữ, không chấm phát âm.', placeholder: '', prompts: [], instruction: '' },
+            speak: { label: 'Hội thoại & Sửa lỗi', emoji: '🗣️', title: 'Trace AI — Hội thoại tiếng Anh & Sửa lỗi', subtitle: 'Trò chuyện tiếng Anh nhiều lượt, nhập vai tình huống, nhận góp ý rồi nói lại. Chỉ phân tích nội dung chữ, không chấm phát âm.', placeholder: '', prompts: [], instruction: '' },
             progress: { label: 'Lộ trình', emoji: '📈', title: 'Trace AI — Lộ trình học tập', subtitle: 'Theo dõi các phiên học tập, sửa lỗi, sơ đồ tư duy và bài kiểm tra đã tạo.', placeholder: '', prompts: [], instruction: '' }
         };
         let traceMode = store.get('trace_mode') || (store.get('mode') === 'en' ? 'en' : 'qa');
@@ -3282,6 +3300,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         function traceSaveRecords() { store.set(TRACE_PROGRESS_KEY, JSON.stringify(traceRecords.slice(-60))); }
         function traceModeButtons() { return Array.from(document.querySelectorAll('.mode-tabs [data-trace-mode]')); }
         function traceSetMode(mode, baseAlreadySet = false) {
+            if (mode === 'en') mode = 'speak';
             if (!TRACE_MODE_META[mode]) mode = 'qa';
             const previous = traceMode;
             if (previous !== mode && (sending || window.traceGenBusy)) {
@@ -3377,7 +3396,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
             traceModeInitialized = true;
         }
         document.getElementById('tab-qa').addEventListener('click', () => traceSetMode('qa', true));
-        document.getElementById('tab-en').addEventListener('click', () => { const m = window.__enSub || 'en'; traceSetMode(m, m === 'en'); });
+        document.getElementById('tab-en').addEventListener('click', () => { const m = window.__enSub || 'speak'; traceSetMode(m); });
         window.traceGoMode = (m) => traceSetMode(m);
         ['debug', 'learnfix', 'memo', 'quiz', 'progress', 'replay', 'writing', 'speak'].forEach(mode => {
             const tab = document.querySelector(`[data-trace-mode="${mode}"]`);
@@ -3553,7 +3572,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
         function renderTraceProgress() {
             const count = mode => traceRecords.filter(record => record.mode === mode).length;
             const stats = [
-                ['🔍', count('debug'), 'Lần sửa code'],
+                ['💻', count('debug'), 'Lần dùng Trợ lý code'],
                 ['🧩', count('learnfix'), 'Lỗi học tập đã phân tích'],
                 ['🧠', count('memo') + count('mindmap'), 'Lượt ghi nhớ'],
                 ['📝', count('quiz'), 'Bài kiểm tra']
@@ -3565,7 +3584,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
                 const date = new Date(record.date).toLocaleString('vi-VN');
                 const summary = escapeHtml(record.summary || 'Đã hoàn thành một hoạt động học tập.');
                 return `<div class="trace-progress-item"><p><strong>${escapeHtml(record.label || TRACE_MODE_META[record.mode]?.label || 'Hoạt động')}</strong> · ${question}</p><small>${date}</small><p style="margin-top:7px;color:var(--tc-muted);font-size:.8rem">${summary}</p>${record.outline ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:#2563EB;font-size:.8rem;font-weight:700">Xem nội dung sơ đồ</summary><pre style="white-space:pre-wrap;margin-top:6px">${escapeHtml(record.outline)}</pre></details>` : ''}</div>`;
-            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Hỏi đáp, Sửa lỗi code, Sửa lỗi học tập, Ghi nhớ hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
+            }).join('') : '<p class="text-sm text-neutral-500">Chưa có hoạt động nào. Hãy dùng Hỏi đáp, Trợ lý code, Sửa lỗi học tập, Ghi nhớ hoặc Bài kiểm tra để bắt đầu ghi lại lộ trình.</p>';
             chatMessages.innerHTML = `<div class="trace-stat-grid">${statHtml}</div><section class="trace-progress-section"><div class="flex items-center justify-between gap-3 flex-wrap"><h3>🧭 Hoạt động gần đây</h3><button type="button" id="trace-clear-progress" class="trace-clear">Xóa lộ trình</button></div><div>${recentHtml}</div></section><p style="font-size:.72rem;text-align:center;color:var(--tc-muted)">Lịch sử này chỉ được lưu trong trình duyệt trên thiết bị của bạn.</p>`;
             chatMessages.scrollTop = 0;
         }
@@ -4742,7 +4761,8 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     idle: 'Bấm micro để nói tiếp',
     muted: 'Bấm micro để nói tiếp'
   };
-  const V = { open: false, kind: '', muted: false, phase: 'starting', amp: 0, tgt: 0, raf: 0, seen: '', lastUser: '', capKey: '', opener: null, prevOverflow: '', draft: '' };
+  const V = { open: false, kind: '', muted: false, phase: 'starting', amp: 0, tgt: 0, raf: 0, seen: '', lastUser: '', capKey: '', opener: null, prevOverflow: '', draft: '', note: '', chip: '' };
+  const DUMMY = { value: '' }; let X = null;
   const display = () => (V.muted && V.phase !== 'thinking' && V.phase !== 'speaking') ? 'muted' : V.phase;
 
   function setCap(role, text) {
@@ -4757,18 +4777,18 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     const d = display();
     vo.dataset.state = d;
     stEl.textContent = LABEL[d] || '';
-    hint.textContent = HINT[d] || '';
+    hint.textContent = V.note || HINT[d] || '';
     if (d === 'thinking') setCap('user', V.lastUser);
     else if (d === 'listening' || d === 'starting') setCap('user', V.seen);
     else if (d === 'muted' || d === 'idle') setCap('user', '');
   }
-  function setPhase(p) { if (V.phase === p) return; V.phase = p; if (V.open) render(); }
+  function setPhase(p) { if (V.phase === p) return; V.phase = p; if (p !== 'idle') V.note = ''; if (V.open) render(); }
 
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function frame(t) {
     if (!V.open) return;
     V.raf = requestAnimationFrame(frame);
-    const s = t / 1000, d = display(), inp = V.kind === 'en' ? enInput : userInput;
+    const s = t / 1000, d = display(), inp = V.kind === 'conv' ? DUMMY : (V.kind === 'en' ? enInput : userInput);
     if (d === 'listening') {
       const v = inp.value;
       if (v !== V.seen) { V.seen = v; V.tgt = 0.55 + Math.random() * 0.4; if (v.trim()) V.lastUser = v.trim(); setCap('user', v); }
@@ -4792,8 +4812,9 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
     V.kind = kind; V.muted = false; V.phase = 'starting'; V.seen = ''; V.lastUser = ''; V.capKey = ''; V.amp = 0; V.tgt = 0;
     muteB.classList.remove('off'); muteB.innerHTML = MIC; muteB.setAttribute('aria-pressed', 'false'); muteB.title = 'Tắt micro';
     if (kind === 'en') { const a = $('en-accent'); chip.textContent = '🎙️ English · ' + (a && a.selectedOptions[0] ? a.selectedOptions[0].textContent : 'Giọng Mỹ'); }
+    else if (kind === 'conv') chip.textContent = V.chip || '🎙️ English';
     else chip.textContent = '🎙️ Tiếng Việt';
-    const inp0 = kind === 'en' ? enInput : userInput;
+    const inp0 = kind === 'conv' ? DUMMY : (kind === 'en' ? enInput : userInput);
     if (!V.open) {
       V.draft = inp0.value; inp0.value = '';
       V.open = true; V.opener = document.activeElement; V.prevOverflow = document.body.style.overflow;
@@ -4807,7 +4828,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   function hide() {
     if (!V.open) return;
     V.open = false; cancelAnimationFrame(V.raf); vo.classList.remove('on');
-    const inp1 = V.kind === 'en' ? enInput : userInput;
+    const inp1 = V.kind === 'conv' ? DUMMY : (V.kind === 'en' ? enInput : userInput);
     if (V.draft && !inp1.value) inp1.value = V.draft;
     V.draft = '';
     document.body.style.overflow = V.prevOverflow;
@@ -4816,9 +4837,9 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   }
 
   // ---------- Nối vào luồng nói chuyện có sẵn ----------
-  const stopMic = () => { if (V.kind === 'en') enStopListening(); else stopListening(); };
-  const clearStatus = () => { if (V.kind === 'en') setEnStatus(''); else setVoiceStatus(''); };
-  const startMic = () => { if (V.kind === 'en') enListen(); else listen(); };
+  const stopMic = () => { if (V.kind === 'conv') { if (X && X.stopMic) X.stopMic(); } else if (V.kind === 'en') enStopListening(); else stopListening(); };
+  const clearStatus = () => { if (V.kind === 'conv') return; if (V.kind === 'en') setEnStatus(''); else setVoiceStatus(''); };
+  const startMic = () => { if (V.kind === 'conv') { if (X && X.startMic) X.startMic(); } else if (V.kind === 'en') enListen(); else listen(); };
 
   function openVoice(kind) {
     if (root.classList.contains('voice-off')) setVoiceUI(true, true);
@@ -4838,6 +4859,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   function endVoice() {
     const k = V.kind;
     hide();
+    if (k === 'conv') { if (X && X.onEnd) X.onEnd(); return; }
     if (k === 'en') { if (enVoice) enStopVoice(); } else if (voiceMode) stopVoiceMode();
   }
   function setMuted(m) {
@@ -4852,6 +4874,7 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   endB.addEventListener('click', endVoice);
   orb.addEventListener('click', () => {
     const d = display();
+    if (V.kind === 'conv') { if (X && X.onOrb) X.onOrb(d); return; }
     if (d === 'listening') {
       const r = V.kind === 'en' ? enRecog : recog;
       if (r && r.stop) { try { r.stop(); } catch (e) {} }          // gửi ngay phần vừa nói
@@ -4900,6 +4923,18 @@ Current topic: ${enTopic ? enTopic.en : 'anything the learner likes'}.`;
   // speak() báo từng câu đang đọc + nhịp để quả cầu đập theo giọng
   window.VO = {
     say(text) { if (!V.open) return; V.phase = 'speaking'; render(); setCap('ai', text); },
+    pulse
+  };
+  window.VOX = {
+    open(o) { X = o; V.chip = o.chip || ''; V.note = ''; show('conv'); },
+    close() { if (V.open && V.kind === 'conv') hide(); },
+    isOpen: () => V.open && V.kind === 'conv',
+    muted: () => V.muted,
+    phase(p) { if (V.open && V.kind === 'conv') setPhase(p); },
+    cap(r, t) { if (V.open && V.kind === 'conv') setCap(r, t); },
+    user(t) { V.lastUser = t || ''; },
+    note(t) { V.note = t || ''; if (V.open) render(); },
+    mute(m) { if (V.open && V.kind === 'conv' && V.muted !== m) setMuted(m); },
     pulse
   };
   window.addEventListener('pagehide', () => { if (V.open) endVoice(); });
@@ -6414,8 +6449,14 @@ render();
 const $=id=>document.getElementById(id),root=$('trace-speak-root');if(!root)return;
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const CATS={verb:'Chia động từ & thì',prep:'Giới từ',article:'Mạo từ',grammar:'Ngữ pháp khác',vocab:'Lựa chọn từ',expr:'Diễn đạt tự nhiên',other:'Khác'};
-const TOPICS={daily:'everyday conversation (routines, family, food, weekend plans)',school:'school life (subjects, teachers, classmates, homework, events)',hobbies:'hobbies and free time',travel:'travel (places, transport, holidays, experiences)',exam:'exam speaking practice (IELTS-style questions: give reasons and examples)'};
-const TN={daily:'Giao tiếp hằng ngày',school:'Trường học',hobbies:'Sở thích',travel:'Du lịch',exam:'Luyện thi'};
+const TOPICS={
+free:'FREE CHAT with no fixed topic, exactly like casually chatting with a native English speaker (a friendly, easy-going friend). Do NOT run a role-play or lesson and do NOT stick to one subject: follow wherever the student takes the conversation, react naturally (humour, opinions, short personal comments or anecdotes of your own), and feel free to move smoothly to a related subject. Use natural spoken English (contractions, everyday expressions) at the student\'s level.',
+hotel:'role-play: you are a friendly hotel receptionist and the student is a guest booking a room (dates, number of guests, room type, price, breakfast, special requests). Stay in character.',
+restaurant:'role-play: you are a waiter taking the student\'s order (menu, allergies, drinks, bill). Stay in character.',
+shopping:'role-play: you are a shop assistant helping the student buy clothes or gadgets (size, colour, price, discounts, returns). Stay in character.',
+interview:'role-play: you are an interviewer for a part-time job or scholarship; the student is the candidate. Stay in character.',
+daily:'everyday conversation (routines, family, food, weekend plans)',school:'school life (subjects, teachers, classmates, homework, events)',hobbies:'hobbies and free time',travel:'travel (places, transport, holidays, experiences)',exam:'exam speaking practice (IELTS-style questions: give reasons and examples)'};
+const TN={free:'Tự do',hotel:'Đặt phòng khách sạn',restaurant:'Gọi món nhà hàng',shopping:'Mua sắm',interview:'Phỏng vấn',daily:'Giao tiếp hằng ngày',school:'Trường học',hobbies:'Sở thích',travel:'Du lịch',exam:'Luyện thi'};
 const LV={A1:'very simple words, sentences under 10 words',A2:'simple everyday words and short sentences',B1:'clear everyday English, moderate sentences',B2:'natural English with some abstract topics',C1:'fluent, nuanced English',C2:'sophisticated, idiomatic English'};
 const REC=(typeof SR!=='undefined'&&SR)?SR:(window.SpeechRecognition||window.webkitSpeechRecognition||null);
 const TTS=!!(window.speechSynthesis&&window.SpeechSynthesisUtterance);
@@ -6444,27 +6485,32 @@ function setState(s){
   $('sp-text').disabled=s==='processing';$('sp-send').disabled=s==='processing';
   $('sp-stopsay').hidden=s!=='speaking';
   if(s!=='listening')$('sp-interim').textContent='';
+  if(S.call)callSync(s);
 }
 // ---- đọc thành tiếng (dùng lại speak() sẵn có của Trace AI)
-function say(text){
+function say(text,after){
   clearTimeout(wd);
-  if(!TTS||!S){if(S&&S.state==='speaking')setState('ready');return}
+  if(S&&S.call&&window.VOX&&VOX.isOpen())VOX.cap('ai',text);
+  const fin=()=>{clearTimeout(wd);if(!S)return;if(after){const a=after;after=null;a();return}if(S.state==='speaking'||S.state==='processing')setState('ready')};
+  if(!TTS||!S){fin();return}
   setState('speaking');
-  const done=()=>{clearTimeout(wd);if(S&&S.state==='speaking')setState('ready')};
-  wd=setTimeout(done,Math.max(6000,text.length*120));
-  try{speak(text,done,'en-US')}catch(e){done()}
+  wd=setTimeout(fin,Math.max(6000,text.length*120));
+  try{speak(text,fin,'en-US')}catch(e){fin()}
 }
 function stopSay(){clearTimeout(wd);try{stopSpeaking()}catch(e){}if(S&&S.state==='speaking')setState('ready')}
 // ---- prompt & phân tích phản hồi
 function sys(){
-  return `You are a friendly English conversation partner for a Vietnamese student. Topic: ${TOPICS[S.topic]}. CEFR level: ${S.level} (${LV[S.level]}).
+  const f=S.focus,past=S.issues.slice(-4).map(x=>'"'+x.orig+'" ('+x.pattern+')').join('; ');
+  return `You are an English conversation partner for a Vietnamese student. Scenario/topic: ${TOPICS[S.topic]}. CEFR level: ${S.level} (${LV[S.level]}).
 You receive the student's utterance as a speech-recognition transcript or typed text. It may lack punctuation/capitalization and may contain recognition glitches: NEVER flag punctuation, capitalization or likely recognition errors. You cannot judge pronunciation: never comment on it.
-Rules:
-- Reply naturally like a real conversation partner: react to what the student said, add something of your own, then ask ONE follow-up question (1-3 short sentences, matching the level). Never just repeat their words. Use English only in "reply".
-- Detect at most ONE notable error per turn (grammar, verb form, preposition, article, word choice or unnatural phrasing) that matters at this level. If the utterance is acceptable, "issue" must be null. Never "correct" acceptable English or make it fancier.
-- issue.original: copy the wrong words EXACTLY from the student's latest message. issue.hint_vi: a short Vietnamese hint (max 2 simple sentences). issue.why_vi: one short Vietnamese reason. issue.model: one full corrected model sentence that keeps the student's meaning and level. issue.category: one of verb, prep, article, grammar, vocab, expr, other.
-- If the latest message starts with [REPAIR_ATTEMPT ...], the student is retrying a previous mistake: set "repair": {"ok": true/false, "comment_vi": "short Vietnamese comment"} judging whether the previous mistake is fixed; if fixed, continue the conversation normally in "reply"; if not, give a gentler new hint via "issue". Otherwise "repair" is null.
-Return ONLY JSON: {"reply":"","issue":null,"repair":null}. Issue shape: {"category":"","original":"","hint_vi":"","why_vi":"","model":""}.`;
+Conversation rules:
+- Hold a REAL conversation: respond to the exact content of what the student just said (confirm or react to the specific details, add realistic information or a small complication), move the scenario forward, then ask ONE natural follow-up question. 1-3 short sentences at the student's level, English only. Never just echo their words. NEVER mention mistakes or corrections inside "reply" — keep it natural; corrections go only in "issue".
+- Detect at most ONE notable error per turn (grammar, verb form/tense, preposition, article, word choice or unnatural phrasing) that matters at this level. If the utterance is acceptable, "issue" must be null. Never "correct" acceptable English or make it fancier.
+- issue.original: copy the wrong words EXACTLY from the student's latest message. issue.pattern: short English label of the mistake pattern (e.g. "past simple of irregular verbs", "preposition after arrive"). issue.hint_vi: short Vietnamese hint (max 2 simple sentences). issue.why_vi: one short Vietnamese reason. issue.model: one full corrected model sentence keeping the student's meaning and level. issue.category: one of verb, prep, article, grammar, vocab, expr, other.
+- If the latest message starts with [REPAIR_ATTEMPT ...], the student MAY be retrying a previous mistake. Only if the message really tries to say that idea again, set "repair": {"ok": true/false, "comment_vi": "short Vietnamese comment"} judging whether the mistake is fixed; if they simply continued the conversation, set "repair" to null. Either way, continue the conversation normally.
+${past?'Mistakes flagged so far in this session: '+past+'.':''}
+${f?`RECURRING MISTAKE: the student keeps making this mistake pattern: "${f.pattern}" (category ${f.cat}). Examples: ${f.ex}. Change the NEXT part of the scenario so that the student has to use this structure again on their own (for example ask about what happened yesterday for past tense, or about price comparison for comparatives), staying in character and at level ${S.level}. Do NOT announce a drill, do NOT give the answer. Also set "focus_check": {"used": true/false, "ok": true/false, "comment_vi": "short Vietnamese"} judging ONLY whether the student's latest message needed this structure (used) and whether they used it correctly (ok).`:'Set "focus_check" to null.'}
+Return ONLY JSON: {"reply":"","issue":null,"repair":null,"focus_check":null}. Issue shape: {"category":"","pattern":"","original":"","hint_vi":"","why_vi":"","model":""}.`;
 }
 function parse(raw){
   let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim(),o;
@@ -6472,19 +6518,28 @@ function parse(raw){
   if(!o||typeof o.reply!=='string'||!o.reply.trim())throw new Error('AI chưa trả về câu trả lời.');
   return o;
 }
+const GKEY=i=>['verb','prep','article','grammar'].includes(i.cat)?i.cat:i.cat+'|'+i.pattern.toLowerCase().replace(/[^a-z ]/g,'').trim();
+function detectFocus(){
+  if(S.focus)return;
+  const g={};S.issues.forEach(i=>(g[GKEY(i)]=g[GKEY(i)]||[]).push(i));
+  for(const [k,l] of Object.entries(g)){
+    if(l.length>=2&&!S.done.has(k)){const last=l[l.length-1];S.focus={key:k,cat:last.cat,pattern:last.pattern,ex:l.slice(-2).map(x=>'"'+x.orig+'" -> "'+x.model+'"').join('; '),turns:0};S.focusLog.push({key:k,pattern:last.pattern,cat:last.cat,turn:S.turns.length,n:l.length,steered:0,outcome:null,cm:''});return}
+  }
+}
 function checkIssue(o,said){
   const i=o.issue;if(!i||typeof i!=='object')return null;
   const orig=String(i.original||'').trim(),model=String(i.model||'').trim(),hint=String(i.hint_vi||'').trim();
   if(!orig||!model||!hint)return null;
   if(!said.toLowerCase().includes(orig.toLowerCase())){S.dropped++;return null}
   if(model.toLowerCase()===said.trim().toLowerCase()){S.dropped++;return null}
-  return{orig,model,hint,why:String(i.why_vi||'').trim(),cat:CATS[i.category]?i.category:'other'};
+  const cat=CATS[i.category]?i.category:'other',pattern=String(i.pattern||'').trim().slice(0,60)||CATS[cat];
+  return{orig,model,hint,why:String(i.why_vi||'').trim(),cat,pattern,said,turn:S.turns.length};
 }
 // ---- hội thoại
 function render(){
   const lg=$('sp-log');
   lg.innerHTML=S.log.map((e,i)=>{
-    if(e.k==='ai')return '<div class="sp-b ai">'+esc(e.text)+'<br><button type="button" data-act="say" data-i="'+i+'">🔊 Nghe lại</button></div>';
+    if(e.k==='ai')return '<div class="sp-b ai">'+esc(e.text)+'<br><button type="button" data-act="say" data-i="'+i+'">🔊 Nghe lại</button>'+(e.focus?'<span class="sp-tag">🎯 Tình huống được AI điều chỉnh để bạn dùng lại cấu trúc: '+esc(e.focus)+'</span>':'')+'</div>';
     if(e.k==='me')return '<div class="sp-b me">'+esc(e.text)+'<small>'+(e.via==='voice'?'Bản chép lời từ giọng nói (có thể sai do nhận dạng)':'Nhập bằng văn bản')+(e.repair?' · lần nói lại':'')+'</small></div>';
     const f=e.f,cur=S.repair&&S.repair.fb===e;
     if(f.res)return '<div class="sp-fb done"><b>Đã nói lại.</b> Cụm “'+esc(f.orig)+'” còn xuất hiện: <b>'+(f.res.gone?'không':'có')+'</b> <small>(đối chiếu văn bản tự động)</small>'+(f.res.cm?'<br>Nhận xét AI: '+esc(f.res.cm):'')+'</div>';
@@ -6497,6 +6552,8 @@ function render(){
 async function turn(text,via,repair,retryOnly){
   setMsg('','');setState('processing');
   const msg=repair?'[REPAIR_ATTEMPT for: "'+repair.orig+'"] '+text:text;
+  const steered=S.focus?S.focus.pattern:'';
+  let repairRes=null;
   let res;
   try{
     for(let n=0;n<2;n++){
@@ -6505,25 +6562,47 @@ async function turn(text,via,repair,retryOnly){
     }
   }catch(e){
     setState('error');
+    S.retryFn=()=>turn(text,via,repair,true);
+    if(S.call)VOX.note('Không nhận được phản hồi từ AI. Kiểm tra mạng/khóa API rồi chạm quả cầu để thử lại.');
     setMsg('bad','Không nhận được phản hồi từ AI: '+esc(e.message||e)+'. (Kiểm tra mạng/khóa API; lời của bạn chưa bị mất.)',()=>turn(text,via,repair,true));
     return;
   }
+  S.retryFn=null;
   const issue=text?checkIssue(res,text):null;
-  S.hist.push({role:'user',text:msg},{role:'assistant',text:JSON.stringify({reply:res.reply,issue:issue?res.issue:null,repair:res.repair||null})});
+  S.hist.push({role:'user',text:msg},{role:'assistant',text:JSON.stringify({reply:res.reply,issue:issue?res.issue:null,repair:res.repair||null,focus_check:null})});
   if(repair){
-    const gone=!text.toLowerCase().includes(repair.orig.toLowerCase());
-    repair.fb.f.res={gone,cm:res.repair&&res.repair.comment_vi?String(res.repair.comment_vi):'',ok:res.repair?res.repair.ok===true:null};
-    S.repairs.push({gone,ok:repair.fb.f.res.ok});S.repair=null;
+    if(res.repair&&typeof res.repair==='object'){
+      const gone=!text.toLowerCase().includes(repair.orig.toLowerCase());
+      repair.fb.f.res={gone,cm:String(res.repair.comment_vi||''),ok:res.repair.ok===true};
+      S.repairs.push({gone,ok:repair.fb.f.res.ok});repairRes=repair.fb.f.res;
+    }
+    S.repair=null;
   }
-  S.log.push({k:'ai',text:res.reply.trim()});
-  if(issue){const fb={k:'fb',f:issue};S.log.push(fb);S.issues.push(issue);S.repair={orig:issue.orig,fb}}
-  render();say(res.reply.trim());
+  if(steered&&S.focus){
+    const lg=S.focusLog[S.focusLog.length-1];lg.steered++;S.focus.turns++;
+    const fc=res.focus_check;
+    if(fc&&typeof fc==='object'&&fc.used===true){lg.outcome=fc.ok===true?'ok':'again';lg.cm=String(fc.comment_vi||'');if(fc.ok===true){S.done.add(S.focus.key);S.focus=null}}
+    else if(S.focus.turns>=3){lg.outcome=lg.outcome||'none';S.done.add(S.focus.key);S.focus=null}
+  }
+  S.log.push({k:'ai',text:res.reply.trim(),focus:steered});
+  if(issue){
+    S.issues.push(issue);
+    if(S.fb==='now'){const fb={k:'fb',f:issue};S.log.push(fb);S.repair={orig:issue.orig,fb}}
+    detectFocus();
+  }
+  updNote();render();
+  const rt=res.reply.trim();
+  if(S.call){
+    if(repairRes)showCallRes(repairRes);
+    if(issue&&S.fb==='now')say(rt,()=>{showCallFb(issue);say('You could say: '+issue.model)});else say(rt);
+  }else say(rt);
 }
+function updNote(){$('sp-note').textContent=S.fb==='end'?'· Đã gom '+S.issues.length+' góp ý — xem khi kết thúc buổi':''}
 function submit(text,via){
   text=String(text||'').replace(/\s+/g,' ').trim();
   if(!S||!text||S.state==='processing'||S.state==='listening')return;
   if(!api())return;
-  stopSay();
+  stopSay();hideCallFb();
   S.turns.push({via,w:text.split(' ').length,t:text});
   const rp=S.repair;S.log.push({k:'me',text,via,repair:!!rp});render();
   $('sp-text').value='';
@@ -6535,55 +6614,88 @@ function micError(code){
   return M[code]||('Lỗi nhận diện giọng nói ('+esc(code)+'). Bạn có thể thử lại hoặc gõ câu trả lời.');
 }
 function stopRec(abort){if(rec){const r=rec;if(abort){r.onend=r.onresult=r.onerror=r.onstart=null;rec=null}try{abort?r.abort():r.stop()}catch(e){}}}
+function listen(cb){
+  stopSay();
+  const r=new REC();rec=r;r.lang='en-US';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+  let fin='',err=null;
+  r.onstart=()=>cb.start();
+  r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t+' ';else it+=t}cb.interim((fin+it).trim())};
+  r.onerror=e=>{err=e.error};
+  r.onend=()=>{
+    if(rec!==r)return;rec=null;cb.end();
+    if(err&&err!=='aborted'&&err!=='no-speech'){micDenied=err==='not-allowed'||err==='service-not-allowed';cb.err(err)}
+    else if(!fin.trim())cb.err('no-speech');
+    else cb.done(fin.trim());
+  };
+  try{r.start()}catch(e){rec=null;cb.end();cb.err('start:'+(e.message||e))}
+}
 function mic(){
   if(!S)return;
   if(S.state==='listening'){stopRec(false);return}
   if(!REC){setMsg('wn','Trình duyệt chưa hỗ trợ nhận diện giọng nói — hãy gõ câu trả lời vào ô bên dưới.');$('sp-text').focus();return}
   if(S.state==='processing')return;
-  stopSay();setMsg('','');
-  const r=new REC();rec=r;r.lang='en-US';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
-  let fin='',err=null;
-  r.onstart=()=>setState('listening');
-  r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t+' ';else it+=t}$('sp-interim').textContent=(fin+it).trim()};
-  r.onerror=e=>{err=e.error};
-  r.onend=()=>{
-    if(rec!==r)return;rec=null;
-    if(err&&err!=='aborted'&&err!=='no-speech'){setState('ready');micDenied=err==='not-allowed'||err==='service-not-allowed';setMsg('bad',micError(err));return}
-    if(!fin.trim()){setState('ready');setMsg('wn','Mình chưa nghe thấy giọng nói nào. Hãy bấm micro và nói lại, hoặc gõ câu trả lời.');return}
-    setState('ready');
-    if($('sp-auto').checked)submit(fin,'voice');
-    else{$('sp-text').value=fin.trim();$('sp-text').dataset.via='voice';setMsg('','Kiểm tra lại chữ rồi bấm “Gửi”.')}
-  };
-  try{r.start()}catch(e){rec=null;setState('ready');setMsg('bad','Không bật được micro: '+esc(e.message||e))}
+  setMsg('','');
+  listen({start:()=>setState('listening'),interim:t=>{$('sp-interim').textContent=t},end:()=>setState('ready'),
+    err:c=>{if(c==='no-speech')setMsg('wn','Mình chưa nghe thấy giọng nói nào. Hãy bấm micro và nói lại, hoặc gõ câu trả lời.');else setMsg('bad',micError(c.replace(/^start:.*/,'start')))},
+    done:t=>{if($('sp-auto').checked)submit(t,'voice');else{$('sp-text').value=t;$('sp-text').dataset.via='voice';setMsg('','Kiểm tra lại chữ rồi bấm “Gửi”.')}}});
 }
 // ---- phiên
-async function start(){
+async function start(call){
+  if(call&&(!REC||!window.VOX)){const e=$('sp-support');e.className='we-msg wn';e.innerHTML='Trình duyệt chưa hỗ trợ nhận diện giọng nói nên chưa gọi được. Hãy dùng “Luyện bằng chữ”.';return}
   if(!api())return;
-  S={topic:$('sp-topic').value,level:$('sp-level').value,log:[],hist:[],turns:[],issues:[],repairs:[],repair:null,dropped:0,skipped:0,t0:Date.now(),state:'ready'};
+  S={topic:$('sp-topic').value,level:$('sp-level').value,fb:$('sp-fbmode').value,call:!!call,silent:0,retryFn:null,log:[],hist:[],turns:[],issues:[],repairs:[],repair:null,focus:null,focusLog:[],done:new Set(),dropped:0,skipped:0,t0:Date.now(),state:'ready'};
   if(typeof setSpeechRate==='function')setSpeechRate($('sp-rate').value,true);
-  $('sp-setup').hidden=true;$('sp-report').hidden=true;$('sp-sess').hidden=false;render();
+  $('sp-setup').hidden=true;$('sp-report').hidden=true;$('sp-sess').hidden=false;updNote();render();
+  if(call)VOX.open({chip:'🎙️ '+TN[S.topic]+' · '+S.level,onEnd:finishCall,onOrb:callOrb,stopMic:()=>{stopRec(true);if(S&&S.state==='listening')S.state='ready'},startMic:()=>{if(S&&S.state==='ready')callListen()}});
   await opening();
 }
 async function opening(){
   setMsg('','');setState('processing');
   try{
-    const m='Start the conversation: greet me in one short sentence and ask me ONE opening question about the topic, suited to my level. Set "issue" and "repair" to null.';
+    const m=S.topic==='free'?'Start a casual chat like a friendly native speaker meeting me: greet me warmly in one short sentence and ask ME ONE easy, open question about anything everyday (how my day is going, what I did recently, etc.). Do not announce a topic or a scenario. Set "issue", "repair" and "focus_check" to null.':'Start the conversation: open the scenario in one or two short sentences (in character if it is a role-play) and ask me ONE opening question suited to my level. Set "issue", "repair" and "focus_check" to null.';
     const res=parse(await callModel(sys(),[],m));
-    S.hist.push({role:'user',text:m},{role:'assistant',text:JSON.stringify({reply:res.reply,issue:null,repair:null})});
+    S.hist.push({role:'user',text:m},{role:'assistant',text:JSON.stringify({reply:res.reply,issue:null,repair:null,focus_check:null})});
     S.log.push({k:'ai',text:res.reply.trim()});render();say(res.reply.trim());
-  }catch(e){setState('error');setMsg('bad','Không bắt đầu được phiên: '+esc(e.message||e),opening)}
+  }catch(e){setState('error');S.retryFn=opening;if(S.call)VOX.note('Không bắt đầu được cuộc gọi. Chạm quả cầu để thử lại.');setMsg('bad','Không bắt đầu được phiên: '+esc(e.message||e),opening)}
+}
+function bindRt(){
+  const R=$('sp-report');
+  R.onclick=e=>{
+    const b=e.target.closest('button[data-act]');if(!b||!S)return;const a=b.dataset.act;
+    if(a==='rsay'){say(S.issues[+b.dataset.k].model);return}
+    const box=b.closest('.sp-rt');if(!box)return;const x=S.issues[+box.dataset.k],inp=box.querySelector('input'),out=box.querySelector('.rout');
+    if(a==='rmic'){
+      if(rec){stopRec(false);return}
+      listen({start:()=>{b.textContent='⏺ Đang nghe…'},interim:t=>{inp.value=t},end:()=>{b.textContent='🎤'},err:c=>{out.textContent=c==='no-speech'?' Chưa nghe thấy giọng nói.':micError(c.replace(/^start:.*/,'start'))},done:t=>{inp.value=t}});
+    }else if(a==='rchk')rtCheck(x,inp.value.trim(),box,out);
+  };
+}
+async function rtCheck(x,text,box,out){
+  if(!text){out.textContent=' Hãy nói hoặc gõ câu trước.';return}
+  if(!api())return;
+  out.textContent=' Đang kiểm tra…';
+  const gone=!text.toLowerCase().includes(x.orig.toLowerCase());let ok=null,cm='';
+  try{
+    const o=parse2(await callModel('You are an English teacher. Output ONLY valid JSON, no markdown.',[],`Student level ${S.level}. The student said: "${x.said}" with the mistake "${x.orig}" (pattern: ${x.pattern}; model: "${x.model}"). The student retried: "${text}". Judge ONLY whether the mistake is fixed and the new sentence is acceptable at this level (ignore punctuation, capitalization, pronunciation). Return JSON {"ok":true|false,"comment_vi":"short Vietnamese comment"}`));
+    ok=o.ok===true;cm=String(o.comment_vi||'');
+  }catch(e){cm='(AI chưa nhận xét được: '+(e.message||e)+')'}
+  x.res={gone,cm,ok};
+  box.outerHTML='<small>Đã nói lại: “'+esc(text)+'” — cụm sai còn xuất hiện: <b>'+(gone?'không':'có')+'</b> (đối chiếu chữ)'+(cm?' · Nhận xét AI: '+esc(cm):'')+'</small>';
 }
 async function finish(){
-  if(!S)return;stopRec(true);stopSay();
+  if(!S)return;stopRec(true);stopSay();hideCallFb();if(window.VOX&&VOX.isOpen())VOX.close();
   const mine=S.turns,sec=Math.round((Date.now()-S.t0)/1000),rep=S.repairs;
   const facts={sec,n:mine.length,voice:mine.filter(t=>t.via==='voice').length,avg:mine.length?(mine.reduce((a,t)=>a+t.w,0)/mine.length).toFixed(1):'0',iss:S.issues.length,rep:rep.length,gone:rep.filter(r=>r.gone).length,skip:S.skipped,drop:S.dropped};
   const cats={};S.issues.forEach(i=>cats[i.cat]=(cats[i.cat]||0)+1);
+  const grp={};S.issues.forEach(i=>(grp[GKEY(i)]=grp[GKEY(i)]||[]).push(i));
+  const rec2=Object.values(grp).filter(l=>l.length>=2).map(l=>esc(l[l.length-1].pattern)+' ('+l.length+' lần)');
   $('sp-sess').hidden=true;const R=$('sp-report');R.hidden=false;
-  const fh='<p class="we-h">Số liệu thực tế<span class="we-tag fact">đếm từ phiên này</span></p><p>Thời lượng: <b>'+Math.floor(sec/60)+' phút '+sec%60+' giây</b> · Lượt bạn nói/gõ: <b>'+facts.n+'</b> (giọng nói: '+facts.voice+', văn bản: '+(facts.n-facts.voice)+') · Trung bình <b>'+facts.avg+'</b> từ/lượt</p><p>Gợi ý lỗi đã nêu: <b>'+facts.iss+'</b>'+(Object.keys(cats).length?' ('+Object.entries(cats).map(([k,v])=>esc(CATS[k])+': '+v).join(', ')+')':'')+' · Lần nói lại: <b>'+facts.rep+'</b>, trong đó cụm sai không còn xuất hiện: <b>'+facts.gone+'</b> · Bỏ qua: '+facts.skip+(facts.drop?' · '+facts.drop+' gợi ý của AI không khớp lời bạn nên đã bị loại':'')+'</p>';
+  const fh='<p class="we-h">Số liệu thực tế<span class="we-tag fact">đếm từ phiên này</span></p><p>Thời lượng: <b>'+Math.floor(sec/60)+' phút '+sec%60+' giây</b> · Lượt bạn nói/gõ: <b>'+facts.n+'</b> (giọng nói: '+facts.voice+', văn bản: '+(facts.n-facts.voice)+') · Trung bình <b>'+facts.avg+'</b> từ/lượt</p><p>Gợi ý lỗi đã nêu: <b>'+facts.iss+'</b>'+(Object.keys(cats).length?' ('+Object.entries(cats).map(([k,v])=>esc(CATS[k])+': '+v).join(', ')+')':'')+' · Lần nói lại: <b>'+facts.rep+'</b>, trong đó cụm sai không còn xuất hiện: <b>'+facts.gone+'</b> · Bỏ qua: '+facts.skip+(facts.drop?' · '+facts.drop+' gợi ý của AI không khớp lời bạn nên đã bị loại':'')+'</p><p>Lỗi lặp lại (đếm tự động): <b>'+(rec2.length?rec2.join(', '):'không có')+'</b>'+(S.focusLog.length?' · Số lượt AI đổi tình huống để luyện lại: <b>'+S.focusLog.reduce((a,x)=>a+x.steered,0)+'</b>':'')+'</p>';
+  const issH=S.issues.length?'<p class="we-h" style="margin-top:12px">Góp ý theo từng lỗi'+(S.fb==='end'?' (gom đến cuối buổi)':'')+'<span class="we-tag fact">trích dẫn khớp lời bạn</span></p>'+S.issues.map((x,k)=>'<div class="sp-rep">Bạn nói: “<i>'+esc(x.orig)+'</i>” <span class="we-chip">'+esc(CATS[x.cat])+'</span><br>Gợi ý: '+esc(x.hint)+(x.why?' '+esc(x.why):'')+'<br>Câu mẫu: <b style="color:var(--ok)">'+esc(x.model)+'</b> <button type="button" data-act="rsay" data-k="'+k+'" style="padding:1px 8px;border-radius:8px;border:1px solid var(--sk-border,#cbd5e1);font-size:.74rem">🔊</button>'+(x.res?'<br><small>Đã nói lại: cụm sai còn xuất hiện: <b>'+(x.res.gone?'không':'có')+'</b> (đối chiếu chữ)'+(x.res.cm?' · Nhận xét AI: '+esc(x.res.cm):'')+'</small>':'<div class="sp-rt" data-k="'+k+'"><input type="text" placeholder="Nói hoặc gõ lại câu của bạn…" maxlength="300">'+(REC?'<button type="button" data-act="rmic">🎤</button>':'')+'<button type="button" data-act="rchk">Kiểm tra</button><small class="rout"></small></div>')+'</div>').join(''):'';
   const note='<p class="we-empty">Trace AI chỉ phân tích bản chép lời bằng chữ, <b>không chấm phát âm</b>. “Cụm sai không còn xuất hiện” chỉ là đối chiếu chữ, chưa chứng minh câu mới hoàn toàn đúng.</p>';
   const btns=(x)=>'<div class="cr-ctl"><button type="button" class="trace-quiz-btn primary" id="sp-new">↺ Phiên mới</button><button type="button" class="trace-quiz-btn" id="sp-copy">Sao chép bản chép lời</button></div>';
   const bind=()=>{$('sp-new').onclick=()=>{S=null;R.hidden=true;$('sp-setup').hidden=false};$('sp-copy').onclick=()=>{const t=S.log.filter(e=>e.k!=='fb').map(e=>(e.k==='ai'?'AI: ':'Me: ')+e.text).join('\n');navigator.clipboard&&navigator.clipboard.writeText(t)}};
-  R.innerHTML='<h3 style="font-weight:850;margin-bottom:8px">Báo cáo phiên luyện nói — '+esc(TN[S.topic])+' · '+S.level+'</h3>'+fh+'<p class="we-h">Nhận xét<span class="we-tag ai">do AI tạo, chưa kiểm chứng</span></p><p class="we-empty" id="sp-ai">Đang tạo nhận xét…</p>'+note+btns();bind();
+  R.innerHTML='<h3 style="font-weight:850;margin-bottom:8px">Báo cáo phiên luyện nói — '+esc(TN[S.topic])+' · '+S.level+'</h3>'+fh+issH+(S.focusLog.length?'<p class="we-h" style="margin-top:12px">Luyện lại cấu trúc lặp<span class="we-tag ai">AI đánh giá, chưa kiểm chứng</span></p><ul style="margin:0 0 8px 18px;list-style:disc">'+S.focusLog.map(x=>'<li>'+esc(x.pattern)+': '+(x.outcome==='ok'?'bạn đã dùng đúng khi AI đổi tình huống':x.outcome==='again'?'vẫn chưa đúng ở lần thử':'chưa có dịp dùng lại rõ ràng')+(x.cm?' — '+esc(x.cm):'')+'</li>').join('')+'</ul>':'')+'<p class="we-h">Nhận xét<span class="we-tag ai">do AI tạo, chưa kiểm chứng</span></p><p class="we-empty" id="sp-ai">Đang tạo nhận xét…</p>'+note+btns();bind();bindRt();
   if(!mine.length){$('sp-ai').textContent='Bạn chưa nói câu nào trong phiên này nên chưa có nhận xét.';return}
   try{
     const tr=mine.map((t,i)=>(i+1)+'. '+t.t).join('\n'),is=S.issues.map(i=>'- "'+i.orig+'" -> '+i.model).join('\n')||'(none)';
@@ -6599,8 +6711,58 @@ Write feedback in VIETNAMESE based ONLY on evidence in these utterances. Return 
   }catch(e){$('sp-ai').textContent='Không tạo được nhận xét AI ('+(e.message||e)+'). Các số liệu thực tế ở trên vẫn đúng.'}
 }
 function parse2(raw){let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();try{return JSON.parse(t)}catch(_){const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<=a)throw new Error('JSON không hợp lệ');return JSON.parse(t.slice(a,b+1))}}
+// ---- Cuộc gọi: dùng bảng gọi (quả cầu) có sẵn của Trace AI
+const fbEl=document.createElement('div');fbEl.id='sp-vofb';fbEl.className='sp-vofb';fbEl.hidden=true;
+(document.getElementById('vo')||document.body).appendChild(fbEl);
+function hideCallFb(){fbEl.hidden=true;fbEl.innerHTML=''}
+function showCallFb(f){
+  fbEl.className='sp-vofb';fbEl.hidden=false;
+  fbEl.innerHTML='<b>💡 Gợi ý</b> '+esc(f.hint)+(f.why?' '+esc(f.why):'')+'<br>Bạn nói: “<i>'+esc(f.orig)+'</i>”<br>Câu mẫu: <b class="m">'+esc(f.model)+'</b><div class="ft">Hãy nói lại câu của bạn (hoặc diễn đạt cách khác) — micro đang nghe.</div><button type="button" data-a="m">🔊 Nghe câu mẫu</button><button type="button" data-a="skip">Bỏ qua</button>';
+}
+function showCallRes(r){
+  fbEl.className='sp-vofb done';fbEl.hidden=false;
+  fbEl.innerHTML='Đã nói lại: cụm sai còn xuất hiện: <b>'+(r.gone?'không':'có')+'</b> <small>(đối chiếu chữ)</small>'+(r.cm?'<br>Nhận xét AI: '+esc(r.cm):'');
+}
+fbEl.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]');if(!b||!S||!S.repair)return;
+  if(b.dataset.a==='m'){stopRec(true);if(S.state==='listening')S.state='ready';say(S.repair.fb.f.model)}
+  else{S.skipped++;S.repair.fb.f.skipped=true;S.repair=null;hideCallFb();render()}
+});
+function callSync(s){
+  if(!window.VOX||!VOX.isOpen())return;
+  const map={listening:'listening',processing:'thinking',speaking:'speaking',error:'idle'};
+  if(s==='ready'){
+    if(VOX.muted()){VOX.phase('idle');return}
+    VOX.phase('starting');
+    setTimeout(()=>{if(S&&S.call&&S.state==='ready'&&!VOX.muted()&&VOX.isOpen())callListen()},250);
+  }else if(map[s])VOX.phase(map[s]);
+}
+function callListen(){
+  if(!S||!S.call||S.state==='listening'||rec)return;
+  listen({
+    start:()=>{setState('listening');VOX.cap('user','')},
+    interim:t=>{VOX.cap('user',t);VOX.user(t);VOX.pulse(0.5)},
+    end:()=>{},
+    err:c=>{
+      S.state='ready';
+      if(c==='no-speech'){
+        if(++S.silent>=3){VOX.mute(true);VOX.note('Mình chưa nghe thấy bạn nói. Bấm micro để nói tiếp.');VOX.phase('idle')}
+        else setState('ready');
+      }else{VOX.mute(true);VOX.note(micError(c.replace(/^start:.*/,'start')));VOX.phase('idle')}
+    },
+    done:t=>{S.silent=0;S.state='ready';VOX.user(t);submit(t,'voice')}
+  });
+}
+function callOrb(d){
+  if(!S)return;
+  if(d==='listening')stopRec(false);
+  else if(d==='speaking')stopSay();
+  else if(S.state==='error'&&S.retryFn){const f=S.retryFn;S.retryFn=null;VOX.note('');f()}
+  else if((d==='idle'||d==='starting')&&S.state==='ready'&&!VOX.muted())callListen();
+}
+function finishCall(){stopRec(true);stopSay();finish()}
 // ---- sự kiện
-$('sp-start').addEventListener('click',start);
+$('sp-start').addEventListener('click',()=>start(false));$('sp-call').addEventListener('click',()=>start(true));if(!REC)$('sp-call').hidden=true;
 $('sp-end').addEventListener('click',finish);
 $('sp-mic').addEventListener('click',mic);
 $('sp-stopsay').addEventListener('click',stopSay);
@@ -6614,7 +6776,7 @@ $('sp-log').addEventListener('click',e=>{
   else if(a==='skip'){S.skipped++;S.repair.fb.f.skipped=true;S.repair=null;render()}
 });
 // rời tab: dừng micro và giọng đọc
-new MutationObserver(()=>{if(root.hidden){stopRec(true);clearTimeout(wd);if(S){if(S.state==='listening'||S.state==='speaking')setState('ready')}}}).observe(root,{attributes:true,attributeFilter:['hidden']});
+new MutationObserver(()=>{if(root.hidden){stopRec(true);clearTimeout(wd);if(S&&S.call&&window.VOX&&VOX.isOpen())VOX.close();if(S){if(S.state==='listening'||S.state==='speaking')setState('ready')}}}).observe(root,{attributes:true,attributeFilter:['hidden']});
 window.traceSpeakShow=function(){};
 })();
 </script>
@@ -7209,6 +7371,46 @@ renderAll();
 })();
 </script>
 
+<script id="trace-code-assist">
+(function(){
+  const bar=document.getElementById('code-assist');
+  if(!bar||typeof TRACE_MODE_META==='undefined')return;
+  const B=Object.assign({},TRACE_MODE_META.debug);
+  const SUBS={
+    solve:{label:'Giải bài tập code',emoji:'📝',title:'Trace AI — Giải bài tập code',
+      subtitle:'Dán đề bài lập trình để nhận hướng giải, thuật toán và lời giải mẫu (C++/Python).',
+      placeholder:'Dán đề bài (kèm giới hạn input/output và ngôn ngữ muốn dùng)…',
+      prompts:['Giải bài này bằng C++ và giải thích thuật toán:','Cho em hướng giải trước, chưa cần code:','Giải bằng Python và phân tích độ phức tạp:'],
+      instruction:'Bạn đang ở chế độ GIẢI BÀI TẬP CODE. Trả lời bằng tiếng Việt. Trình bày: (1) tóm tắt đề và input/output, (2) ý tưởng/thuật toán từng bước kèm độ phức tạp, (3) code hoàn chỉnh trong khối code có nhãn ngôn ngữ (mặc định C++ nếu học sinh không nêu), (4) chạy tay với ví dụ của đề, (5) các trường hợp biên cần chú ý. Nếu đề thiếu dữ kiện (giới hạn, định dạng), hãy nêu giả định rõ ràng, không tự bịa. Nếu học sinh muốn tự làm, chỉ gợi ý hướng giải và chưa đưa code hoàn chỉnh. Bạn không chạy được code: không tuyên bố đã chạy hay đã kiểm tra bằng máy; nếu cần kiểm chứng, gợi ý dùng Hidden Test Lab hoặc Code Replay.'},
+    debug:{label:'Debug code',emoji:'🐞',title:'Trace AI — Debug code',subtitle:B.subtitle,placeholder:B.placeholder,prompts:B.prompts,instruction:B.instruction},
+    explain:{label:'Giải thích code',emoji:'📖',title:'Trace AI — Giải thích code',
+      subtitle:'Dán đoạn code để hiểu từng dòng, luồng chạy, ý nghĩa biến và độ phức tạp.',
+      placeholder:'Dán đoạn code cần giải thích (kèm ví dụ input nếu có)…',
+      prompts:['Giải thích code này từng dòng:','Code này chạy thế nào với input ví dụ sau?','Giải thích thuật toán và độ phức tạp của đoạn code:'],
+      instruction:'Bạn đang ở chế độ GIẢI THÍCH CODE. Trả lời bằng tiếng Việt, dễ hiểu với học sinh. Trình bày: (1) code làm gì (1–2 câu), (2) giải thích theo từng khối/dòng quan trọng, (3) ví dụ chạy tay với một input nhỏ (bảng giá trị biến nếu có vòng lặp), (4) độ phức tạp, (5) lưu ý hoặc lỗi tiềm ẩn nếu thấy. Chỉ giải thích những gì có trong code; không tự thêm tính năng, không bịa thư viện/hàm. Nếu nghi code sai, nêu rõ đó là nghi vấn và gợi ý chuyển sang Debug code. Có thể gợi ý dùng Code Replay để xem từng bước chạy.'}
+  };
+  let sub='debug';try{const v=store.get('trace_code_assist');if(SUBS[v])sub=v}catch(e){}
+  const apply=()=>Object.assign(TRACE_MODE_META.debug,SUBS[sub]);
+  const paint=()=>bar.querySelectorAll('button[data-assist]').forEach(b=>{const on=b.dataset.assist===sub;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});
+  function refresh(){
+    apply();paint();
+    try{
+      traceSetMode('debug');
+      if(!chatHistory.length){traceModeViews.debug=traceBuildModeWelcome('debug');chatMessages.innerHTML=traceModeViews.debug}
+    }catch(e){}
+  }
+  apply();
+  const prev=window.traceEnHub;
+  window.traceEnHub=function(mode){if(prev)prev(mode);bar.hidden=mode!=='debug';if(mode==='debug')paint()};
+  bar.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-assist]');if(!b||b.dataset.assist===sub)return;
+    if(sending||window.traceGenBusy){showToast('Trace AI đang trả lời. Hãy đợi xong rồi đổi chế độ.',false);return}
+    sub=b.dataset.assist;try{store.set('trace_code_assist',sub)}catch(err){}
+    refresh();
+  });
+  try{if(typeof traceMode==='string'&&traceMode==='debug'){bar.hidden=false;refresh()}}catch(e){}
+})();
+</script>
 <script id="trace-v14-optional-particles">
 (function(){
 'use strict';
